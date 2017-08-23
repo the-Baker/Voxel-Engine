@@ -312,7 +312,7 @@ int main(int argc, char* argv[])
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
-
+		std::cout << "CAMERA POS: " << camera.position.x << " " << camera.position.y << " " << camera.position.z << std::endl;
 
 
 		glUseProgram(shaderProgram);
@@ -325,7 +325,7 @@ int main(int argc, char* argv[])
 		glBindVertexArray(vao);
 		glBindTexture(GL_TEXTURE_2D, texture);
 
-		for (unsigned int i = 2; i < 6; i++)
+		for (unsigned int i = 0; i < 10; i++)
 		{
 			glm::mat4 model = glm::mat4(1.0f);
 			model = glm::translate(model, cubePositions[i]);
@@ -338,16 +338,16 @@ int main(int argc, char* argv[])
 		
 
 		glUseProgram(lightShaderProgram);
+		glBindVertexArray(lightVAO);
 		projection = glm::perspective(glm::radians(camera.fov), (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
 		setUniformMat4("projection", projection, shaderProgram);
 		view = GetCameraViewMatrix(camera);
 		setUniformMat4("view", view, shaderProgram);
 		glm::mat4 model = glm::mat4(1.0f);
-		//model = glm::translate(model, lightPos);
-		//model = glm::scale(model, glm::vec3(0.5f));
+		model = glm::translate(model, lightPos);
+		model = glm::scale(model, glm::vec3(0.5f));
 		setUniformMat4("model", model, shaderProgram);
 
-		glBindVertexArray(lightVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		SDL_GL_SwapWindow(window);
