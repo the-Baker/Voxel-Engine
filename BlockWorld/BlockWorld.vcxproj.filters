@@ -29,6 +29,12 @@
     <None Include="fragmentShader.glsl">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="lightFragShader.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="lightVertexShader.glsl">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stb_image.h">

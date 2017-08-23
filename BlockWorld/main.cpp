@@ -39,6 +39,11 @@ void setUniformMat4(char* uniformName, glm::mat4 matrix, GLuint program)
 	int location = glGetUniformLocation(program, uniformName);
 	glUniformMatrix4fv(location, 1, GL_FALSE, &matrix[0][0]);
 }
+void setUniformVec3(char* uniformName, glm::vec3 vector, GLuint program)
+{
+	int location = glGetUniformLocation(program, uniformName);
+	glUniform3f(location, vector.x, vector.y, vector.z);
+}
 
 float vertices[] = {
 	-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
@@ -121,6 +126,8 @@ int main(int argc, char* argv[])
 	char* vShader = file_read("vertexShader.glsl");
 	char* fShader = file_read("fragmentShader.glsl");
 
+	char* lVShader = file_read("lightVertexShader.glsl");
+	char* lFShader = file_read("lightFragShader.glsl");
 
 	char infoLog[512];
 	int success;
@@ -131,7 +138,7 @@ int main(int argc, char* argv[])
 	if (!success)
 	{
 		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
+		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
 	}
 	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 	glShaderSource(fragmentShader, 1, &fShader, NULL);
@@ -151,30 +158,63 @@ int main(int argc, char* argv[])
 	glDeleteShader(fragmentShader);
 
 
+	GLuint lightVertexShader = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(lightVertexShader, 1, &lVShader, NULL);
+	glCompileShader(lightVertexShader);
+	if (!success)
+	{
+		glGetShaderInfoLog(lightVertexShader, 512, NULL, infoLog);
+		std::cout << "ERROR::SHADER::LIGHTVERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+	}
+	GLuint lightFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(lightFragmentShader, 1, &lFShader, NULL);
+	glCompileShader(lightFragmentShader);
+	if (!success)
+	{
+		glGetShaderInfoLog(lightVertexShader, 512, NULL, infoLog);
+		std::cout << "ERROR::SHADER::LIGHTFRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
+	}
+	GLuint lightShaderProgram = glCreateProgram();
+	glAttachShader(lightShaderProgram, lightVertexShader);
+	glAttachShader(lightShaderProgram, lightFragmentShader);
+	glLinkProgram(lightShaderProgram);
+	glDeleteShader(lightVertexShader);
+	glDeleteShader(lightFragmentShader);
 
 	
 	GLuint vao;
 	GLuint vbo;
-	GLuint ebo;
+	//GLuint ebo;
 
 	glGenVertexArrays(1, &vao);
 	glGenBuffers(1, &vbo);
-	glGenBuffers(1, &ebo);
+	//glGenBuffers(1, &ebo);
 
 	glBindVertexArray(vao);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+	//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(sizeof(float) * 3));
 	glEnableVertexAttribArray(1);
 
+	GLuint lightVAO;
+	glGenVertexArrays(1, &lightVAO);
+	glBindVertexArray(lightVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(sizeof(float) * 3));
+	glEnableVertexAttribArray(1);
+
+
+
+
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
-
 
 
 	int texWidth, texHeight, texChannels;
@@ -209,6 +249,8 @@ int main(int argc, char* argv[])
 	camera.pitch = PITCH;
 	camera.worldUp = camera.up;
 	UpdateCameraVectors(&camera);
+
+	glm::vec3 lightPos = glm::vec3(1.2f, 1.0f, 2.0f);
 
 
 	float deltaTime = 0.0f;
@@ -269,17 +311,21 @@ int main(int argc, char* argv[])
 		glClearColor(1.0f, 0.6f, 0.4f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+
+
+
+
 		glUseProgram(shaderProgram);
+		setUniformVec3("objectColor", glm::vec3(1.0f, 0.2f, 0.3f), shaderProgram);
+		setUniformVec3("lightColor", glm::vec3(0.0f, 0.5f, 1.0f), shaderProgram);
 		glm::mat4 projection = glm::perspective(glm::radians(camera.fov), (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
 		setUniformMat4("projection", projection, shaderProgram);
-
 		glm::mat4 view = GetCameraViewMatrix(camera);
 		setUniformMat4("view", view, shaderProgram);
-
 		glBindVertexArray(vao);
 		glBindTexture(GL_TEXTURE_2D, texture);
-		
-		for (unsigned int i = 0; i < 10; i++)
+
+		for (unsigned int i = 2; i < 6; i++)
 		{
 			glm::mat4 model = glm::mat4(1.0f);
 			model = glm::translate(model, cubePositions[i]);
@@ -289,9 +335,20 @@ int main(int argc, char* argv[])
 
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
+		
 
-		//glBindVertexArray(vao);
-		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		glUseProgram(lightShaderProgram);
+		projection = glm::perspective(glm::radians(camera.fov), (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
+		setUniformMat4("projection", projection, shaderProgram);
+		view = GetCameraViewMatrix(camera);
+		setUniformMat4("view", view, shaderProgram);
+		glm::mat4 model = glm::mat4(1.0f);
+		//model = glm::translate(model, lightPos);
+		//model = glm::scale(model, glm::vec3(0.5f));
+		setUniformMat4("model", model, shaderProgram);
+
+		glBindVertexArray(lightVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		SDL_GL_SwapWindow(window);
 	}
