@@ -44,49 +44,53 @@ void setUniformVec3(char* uniformName, glm::vec3 vector, GLuint program)
 	int location = glGetUniformLocation(program, uniformName);
 	glUniform3f(location, vector.x, vector.y, vector.z);
 }
-
+void setUniformFloat(char* uniformName, float f, GLuint program)
+{
+	int location = glGetUniformLocation(program, uniformName);
+	glUniform1f(location, f);
+}
 float vertices[] = {
-	-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-	0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-	0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-	0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-	-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+	0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+	0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+	0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+	-0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
 
-	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-	0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-	0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-	0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-	-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+	0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+	0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+	0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+	-0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
 
-	-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-	-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-	-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+	-0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+	-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+	-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+	-0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+	-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
 
-	0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-	0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-	0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-	0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-	0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-	0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+	0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+	0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+	0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+	0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+	0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
 
-	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-	0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-	0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-	0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+	0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+	0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+	0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
 
-	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-	0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-	0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-	0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-	-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+	-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+	0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+	0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+	0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+	-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+	-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
 };
 
 glm::vec3 cubePositions[] = {
@@ -108,6 +112,8 @@ unsigned int indices[] = { 0, 1, 2 , 1, 2, 3};
 
 int main(int argc, char* argv[])
 {
+	int counter = 0;
+
 	bool gameShouldRun = true;
 	int windowWidth = 1280;
 	int windowHeight = 720;
@@ -120,8 +126,11 @@ int main(int argc, char* argv[])
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 	SDL_GLContext glContext = SDL_GL_CreateContext(window);
+
+
 	glewInit();
 	glEnable(GL_DEPTH_TEST);
+
 
 	char* vShader = file_read("vertexShader.glsl");
 	char* fShader = file_read("fragmentShader.glsl");
@@ -157,7 +166,6 @@ int main(int argc, char* argv[])
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShader);
 
-
 	GLuint lightVertexShader = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(lightVertexShader, 1, &lVShader, NULL);
 	glCompileShader(lightVertexShader);
@@ -184,62 +192,35 @@ int main(int argc, char* argv[])
 	
 	GLuint vao;
 	GLuint vbo;
-	//GLuint ebo;
 
 	glGenVertexArrays(1, &vao);
 	glGenBuffers(1, &vbo);
-	//glGenBuffers(1, &ebo);
+
 
 	glBindVertexArray(vao);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-	//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(sizeof(float) * 3));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
 	GLuint lightVAO;
 	glGenVertexArrays(1, &lightVAO);
 	glBindVertexArray(lightVAO);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(sizeof(float) * 3));
-	glEnableVertexAttribArray(1);
-
-
+	//glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+	//glEnableVertexAttribArray(1);
 
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 
 
-	int texWidth, texHeight, texChannels;
-	unsigned char* textureData = stbi_load("bricks.jpg", &texWidth, &texHeight, &texChannels, 0);
-	GLuint texture;
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	if (textureData)
-	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texWidth, texHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, textureData);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
-	else
-	{
-		std::cout << "Failure: Loading Texture." << std::endl;
-	}
-	stbi_image_free(textureData);
-
-
 	Camera camera;
-	camera.position = glm::vec3(0.0f, 0.0f, 0.0f);
+	camera.position = glm::vec3(0.0f, 0.0f, 5.0f);
 	camera.front = glm::vec3(0.0f, 0.0f, 1.0f);
 	camera.up = glm::vec3(0.0f, 1.0f, 0.0f);
 	camera.moveSpeed = SPEED;
@@ -248,19 +229,26 @@ int main(int argc, char* argv[])
 	camera.yaw = YAW;
 	camera.pitch = PITCH;
 	camera.worldUp = camera.up;
+	bool firstCamera = true;
 	UpdateCameraVectors(&camera);
 
 	glm::vec3 lightPos = glm::vec3(1.2f, 1.0f, 2.0f);
-
+	glm::vec3 lightColor;
 
 	float deltaTime = 0.0f;
 	float lastTime = 0.0f;
 	float currentTime = 0.0f;
+
+
+	int frame = 0;
 	while (gameShouldRun)
 	{
+	//	std::cout << "Start Frame " << frame++ << std::endl;
 		deltaTime = currentTime - lastTime;
 		lastTime = currentTime;
 		currentTime = SDL_GetTicks() / 1000.0f;
+
+
 
 		SDL_Event windowEvent;
 		while (SDL_PollEvent(&windowEvent))
@@ -286,15 +274,19 @@ int main(int argc, char* argv[])
 				}break;
 			}
 		}
-		SDL_PumpEvents();
+
+
+
+#if 1
 		int xOffset, yOffset;
 		SDL_GetRelativeMouseState(&xOffset, &yOffset);
 		CameraLook(&camera, (float)xOffset, (float)yOffset, true);
+		SDL_PumpEvents();
 		const Uint8 *keyboardState = SDL_GetKeyboardState(0);
 		if (keyboardState[SDL_SCANCODE_W])
 			MoveCamera(&camera, FORWARD, deltaTime);
 		if (keyboardState[SDL_SCANCODE_A])
-			MoveCamera(&camera, LEFT, deltaTime);
+		MoveCamera(&camera, LEFT, deltaTime);
 		if (keyboardState[SDL_SCANCODE_S])
 			MoveCamera(&camera, BACKWARD, deltaTime);
 		if (keyboardState[SDL_SCANCODE_D])
@@ -303,52 +295,60 @@ int main(int argc, char* argv[])
 			MoveCamera(&camera, UP, deltaTime);
 		if (keyboardState[SDL_SCANCODE_LSHIFT])
 			MoveCamera(&camera, DOWN, deltaTime);
-			
-
+#endif // 0
 
 
 		glViewport(0, 0, windowWidth, windowHeight);
-		glClearColor(1.0f, 0.6f, 0.4f, 1.0f);
+		glClearColor(100.0f / 255.0f, 65.0f / 255.0f, 165.0f / 255.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
-		std::cout << "CAMERA POS: " << camera.position.x << " " << camera.position.y << " " << camera.position.z << std::endl;
 
+		lightColor.x = sinf(currentTime * 2.0f);
+		lightColor.y = sinf(currentTime * 0.7f);
+		lightColor.z = sinf(currentTime * 1.3f);
+		glm::vec3 diffuseColor = lightColor * glm::vec3(0.5f);
+		glm::vec3 ambientColor = diffuseColor * glm::vec3(0.2f);
 
 		glUseProgram(shaderProgram);
+		setUniformVec3("material.ambient", glm::vec3(1.0f, 0.5f, 0.31f), shaderProgram);
+		setUniformVec3("material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f), shaderProgram);
+		setUniformVec3("material.specular", glm::vec3(0.5f, 0.5f, 0.5f), shaderProgram);
+		setUniformVec3("light.ambient", ambientColor, shaderProgram);
+		setUniformVec3("light.diffuse", diffuseColor, shaderProgram);
+		setUniformVec3("light.specular", glm::vec3(1.0f, 1.0f, 1.0f), shaderProgram);
+		setUniformVec3("light.position", lightPos, shaderProgram);
+		setUniformFloat("material.shininess", 32.0f, shaderProgram);
+
+		setUniformVec3("viewPos", camera.position, shaderProgram);
 		setUniformVec3("objectColor", glm::vec3(1.0f, 0.2f, 0.3f), shaderProgram);
-		setUniformVec3("lightColor", glm::vec3(0.0f, 0.5f, 1.0f), shaderProgram);
+
 		glm::mat4 projection = glm::perspective(glm::radians(camera.fov), (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
 		setUniformMat4("projection", projection, shaderProgram);
 		glm::mat4 view = GetCameraViewMatrix(camera);
 		setUniformMat4("view", view, shaderProgram);
-		glBindVertexArray(vao);
-		glBindTexture(GL_TEXTURE_2D, texture);
 
-		for (unsigned int i = 0; i < 10; i++)
+		for (int i = 0; i < 10; i++)
 		{
+			float angle = 20.0f * i * (SDL_GetTicks() / 100000.0f);
 			glm::mat4 model = glm::mat4(1.0f);
-			model = glm::translate(model, cubePositions[i]);
-			float angle = 20.0f * i;
-			model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+			model = glm::translate(model, glm::vec3(cubePositions[i]));
+			model = glm::rotate(model, angle, glm::vec3((float)i * 0.5f, (float)i * 0.34, (float)i));
 			setUniformMat4("model", model, shaderProgram);
-
+			glBindVertexArray(vao);
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
-		
 
 		glUseProgram(lightShaderProgram);
 		glBindVertexArray(lightVAO);
-		projection = glm::perspective(glm::radians(camera.fov), (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
-		setUniformMat4("projection", projection, shaderProgram);
-		view = GetCameraViewMatrix(camera);
-		setUniformMat4("view", view, shaderProgram);
+		setUniformMat4("projection", projection, lightShaderProgram);
+		setUniformMat4("view", view, lightShaderProgram);
 		glm::mat4 model = glm::mat4(1.0f);
 		model = glm::translate(model, lightPos);
 		model = glm::scale(model, glm::vec3(0.5f));
-		setUniformMat4("model", model, shaderProgram);
-
+		setUniformMat4("model", model, lightShaderProgram);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
+
 
 		SDL_GL_SwapWindow(window);
 	}
