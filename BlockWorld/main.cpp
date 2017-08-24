@@ -75,8 +75,8 @@ glm::vec3 cubePositions[] = {
 int main(int argc, char* argv[])
 {
 	bool gameShouldRun = true;
-	int windowWidth = 1280;
-	int windowHeight = 720;
+	int windowWidth = 1920;
+	int windowHeight = 1080;
 
 	SDL_Init(SDL_INIT_EVERYTHING);
 
@@ -93,7 +93,7 @@ int main(int argc, char* argv[])
 
 
 
-	GLuint shaderProgram = createShader("vertexShader.glsl", "fragmentShader.glsl");
+	GLuint shaderProgram = createShader("vertexShader.glsl", "spotLightFragShader.glsl");
 
 	GLuint lightShaderProgram = createShader("lightVertexShader.glsl", "lightFragShader.glsl");
 
@@ -219,12 +219,19 @@ int main(int argc, char* argv[])
 
 
 		glUseProgram(shaderProgram);
-		setUniformVec3("light.direction", glm::vec3(-0.2f, -1.0f, -0.3f), shaderProgram);
+		setUniformVec3("light.position", camera.position, shaderProgram);
+		setUniformVec3("light.direction", camera.front, shaderProgram);
+		setUniformFloat("light.cutOff", glm::cos(glm::radians(12.5f)), shaderProgram);
+		setUniformFloat("light.outerCutoff", glm::cos(glm::radians(17.5f)), shaderProgram);
 		setUniformVec3("viewPos", camera.position, shaderProgram);
 
-		setUniformVec3("light.ambient", glm::vec3(0.2f, 0.2f, 0.2f), shaderProgram);
-		setUniformVec3("light.diffuse", glm::vec3(0.5f, 0.5f, 0.5f), shaderProgram);
+
+		setUniformVec3("light.ambient", glm::vec3(0.1f, 0.1f, 0.1f), shaderProgram);
+		setUniformVec3("light.diffuse", glm::vec3(0.8f, 0.8f, 0.8f), shaderProgram);
 		setUniformVec3("light.specular", glm::vec3(1.0f, 1.0f, 1.0f), shaderProgram);
+		setUniformFloat("light.constant", 1.0f, shaderProgram);
+		setUniformFloat("light.linear", 0.09f, shaderProgram);
+		setUniformFloat("light.quadratic", 0.032f, shaderProgram);
 
 		setUniformFloat("material.shininess", 32.0f, shaderProgram);
 
@@ -250,7 +257,7 @@ int main(int argc, char* argv[])
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
 
-
+		/*
 		glUseProgram(lightShaderProgram);
 		setUniformMat4("projection", projection, lightShaderProgram);
 		setUniformMat4("view", view, lightShaderProgram);
@@ -261,7 +268,7 @@ int main(int argc, char* argv[])
 
 		glBindVertexArray(lightVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
-
+		*/
 
 		SDL_GL_SwapWindow(window);
 	}
