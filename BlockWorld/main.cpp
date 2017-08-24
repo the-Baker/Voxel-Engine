@@ -7,90 +7,55 @@
 #include <glm\gtc\matrix_transform.hpp>
 #include <glm\gtc\type_ptr.hpp>
 
+#include "shader.h"
 #include "camera.h"
 
 
-char* file_read(const char* filename) {
-	SDL_RWops *rw = SDL_RWFromFile(filename, "rb");
-	if (rw == NULL) return NULL;
+unsigned int loadTexture(char const* filename);
 
-	Sint64 res_size = SDL_RWsize(rw);
-	char* res = (char*)malloc(res_size + 1);
-
-	Sint64 nb_read_total = 0, nb_read = 1;
-	char* buf = res;
-	while (nb_read_total < res_size && nb_read != 0) {
-		nb_read = SDL_RWread(rw, buf, 1, (res_size - nb_read_total));
-		nb_read_total += nb_read;
-		buf += nb_read;
-	}
-	SDL_RWclose(rw);
-	if (nb_read_total != res_size) {
-		free(res);
-		return NULL;
-	}
-
-	res[nb_read_total] = '\0';
-	return res;
-}
-
-void setUniformMat4(char* uniformName, glm::mat4 matrix, GLuint program)
-{
-	int location = glGetUniformLocation(program, uniformName);
-	glUniformMatrix4fv(location, 1, GL_FALSE, &matrix[0][0]);
-}
-void setUniformVec3(char* uniformName, glm::vec3 vector, GLuint program)
-{
-	int location = glGetUniformLocation(program, uniformName);
-	glUniform3f(location, vector.x, vector.y, vector.z);
-}
-void setUniformFloat(char* uniformName, float f, GLuint program)
-{
-	int location = glGetUniformLocation(program, uniformName);
-	glUniform1f(location, f);
-}
 float vertices[] = {
-	-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-	0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-	0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-	0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-	-0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-	-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+	// positions          // normals           // texture coords
+	-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
+	0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 0.0f,
+	0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
+	0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
+	-0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
 
-	-0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-	0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-	0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-	0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-	-0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-	-0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 0.0f,
+	0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 0.0f,
+	0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 1.0f,
+	0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 1.0f,
+	-0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 1.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 0.0f,
 
-	-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-	-0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-	-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-	-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-	-0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-	-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+	-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+	-0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+	-0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
+	-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
 
-	0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-	0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-	0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-	0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-	0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-	0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+	0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+	0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
+	0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+	0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+	0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
+	0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
 
-	-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-	0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-	0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-	0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-	-0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-	-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
+	0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 1.0f,
+	0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
+	0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 0.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
 
-	-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-	0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-	0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-	0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-	-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-	-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
+	-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f,
+	0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 1.0f,
+	0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
+	0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
+	-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 0.0f,
+	-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f
 };
 
 glm::vec3 cubePositions[] = {
@@ -106,14 +71,9 @@ glm::vec3 cubePositions[] = {
 	glm::vec3(-1.3f,  1.0f, -1.5f)
 };
 
-unsigned int indices[] = { 0, 1, 2 , 1, 2, 3};
-
-
 
 int main(int argc, char* argv[])
 {
-	int counter = 0;
-
 	bool gameShouldRun = true;
 	int windowWidth = 1280;
 	int windowHeight = 720;
@@ -132,64 +92,11 @@ int main(int argc, char* argv[])
 	glEnable(GL_DEPTH_TEST);
 
 
-	char* vShader = file_read("vertexShader.glsl");
-	char* fShader = file_read("fragmentShader.glsl");
 
-	char* lVShader = file_read("lightVertexShader.glsl");
-	char* lFShader = file_read("lightFragShader.glsl");
+	GLuint shaderProgram = createShader("vertexShader.glsl", "fragmentShader.glsl");
 
-	char infoLog[512];
-	int success;
-	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexShader, 1, &vShader, NULL);
-	glCompileShader(vertexShader);
-	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-	}
-	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShader, 1, &fShader, NULL);
-	glCompileShader(fragmentShader);
-	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
-	}
-	GLuint shaderProgram = glCreateProgram();
-	glAttachShader(shaderProgram, vertexShader);
-	glAttachShader(shaderProgram, fragmentShader);
-	glLinkProgram(shaderProgram);
-	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-	glDeleteShader(vertexShader);
-	glDeleteShader(fragmentShader);
+	GLuint lightShaderProgram = createShader("lightVertexShader.glsl", "lightFragShader.glsl");
 
-	GLuint lightVertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(lightVertexShader, 1, &lVShader, NULL);
-	glCompileShader(lightVertexShader);
-	if (!success)
-	{
-		glGetShaderInfoLog(lightVertexShader, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::LIGHTVERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-	}
-	GLuint lightFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(lightFragmentShader, 1, &lFShader, NULL);
-	glCompileShader(lightFragmentShader);
-	if (!success)
-	{
-		glGetShaderInfoLog(lightVertexShader, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::LIGHTFRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
-	}
-	GLuint lightShaderProgram = glCreateProgram();
-	glAttachShader(lightShaderProgram, lightVertexShader);
-	glAttachShader(lightShaderProgram, lightFragmentShader);
-	glLinkProgram(lightShaderProgram);
-	glDeleteShader(lightVertexShader);
-	glDeleteShader(lightFragmentShader);
-
-	
 	GLuint vao;
 	GLuint vbo;
 
@@ -200,19 +107,20 @@ int main(int argc, char* argv[])
 	glBindVertexArray(vao);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+	glEnableVertexAttribArray(2);
+
 
 	GLuint lightVAO;
 	glGenVertexArrays(1, &lightVAO);
 	glBindVertexArray(lightVAO);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
-	//glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-	//glEnableVertexAttribArray(1);
 
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -233,20 +141,28 @@ int main(int argc, char* argv[])
 	UpdateCameraVectors(&camera);
 
 	glm::vec3 lightPos = glm::vec3(1.2f, 1.0f, 2.0f);
-	glm::vec3 lightColor;
 
 	float deltaTime = 0.0f;
 	float lastTime = 0.0f;
 	float currentTime = 0.0f;
 
 
+	GLuint diffuseMap = loadTexture("container2.png");
+	GLuint specularMap = loadTexture("container2_specular2.png");
+
+	glUseProgram(shaderProgram);
+	setUniformInt("material.diffuse", 0, shaderProgram);
+	setUniformInt("material.specular", 1, shaderProgram);
+
+
+
 	int frame = 0;
 	while (gameShouldRun)
 	{
 	//	std::cout << "Start Frame " << frame++ << std::endl;
+		currentTime = SDL_GetTicks() / 1000.0f;
 		deltaTime = currentTime - lastTime;
 		lastTime = currentTime;
-		currentTime = SDL_GetTicks() / 1000.0f;
 
 
 
@@ -299,54 +215,48 @@ int main(int argc, char* argv[])
 
 
 		glViewport(0, 0, windowWidth, windowHeight);
-		glClearColor(100.0f / 255.0f, 65.0f / 255.0f, 165.0f / 255.0f, 1.0f);
+		glClearColor(50.0f / 255.0f, 32.5f / 255.0f, 82.5f / 255.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
-
-		lightColor.x = sinf(currentTime * 2.0f);
-		lightColor.y = sinf(currentTime * 0.7f);
-		lightColor.z = sinf(currentTime * 1.3f);
-		glm::vec3 diffuseColor = lightColor * glm::vec3(0.5f);
-		glm::vec3 ambientColor = diffuseColor * glm::vec3(0.2f);
-
 		glUseProgram(shaderProgram);
-		setUniformVec3("material.ambient", glm::vec3(1.0f, 0.5f, 0.31f), shaderProgram);
-		setUniformVec3("material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f), shaderProgram);
-		setUniformVec3("material.specular", glm::vec3(0.5f, 0.5f, 0.5f), shaderProgram);
-		setUniformVec3("light.ambient", ambientColor, shaderProgram);
-		setUniformVec3("light.diffuse", diffuseColor, shaderProgram);
-		setUniformVec3("light.specular", glm::vec3(1.0f, 1.0f, 1.0f), shaderProgram);
 		setUniformVec3("light.position", lightPos, shaderProgram);
-		setUniformFloat("material.shininess", 32.0f, shaderProgram);
-
 		setUniformVec3("viewPos", camera.position, shaderProgram);
-		setUniformVec3("objectColor", glm::vec3(1.0f, 0.2f, 0.3f), shaderProgram);
+
+		setUniformVec3("light.ambient", glm::vec3(0.2f, 0.2f, 0.2f), shaderProgram);
+		setUniformVec3("light.diffuse", glm::vec3(0.5f, 0.5f, 0.5f), shaderProgram);
+		setUniformVec3("light.specular", glm::vec3(1.0f, 1.0f, 1.0f), shaderProgram);
+
+		setUniformVec3("material.specular", glm::vec3(0.5f, 0.5f, 0.5f), shaderProgram);
+		setUniformFloat("material.shininess", 64.0f, shaderProgram);
 
 		glm::mat4 projection = glm::perspective(glm::radians(camera.fov), (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
-		setUniformMat4("projection", projection, shaderProgram);
 		glm::mat4 view = GetCameraViewMatrix(camera);
+		setUniformMat4("projection", projection, shaderProgram);
 		setUniformMat4("view", view, shaderProgram);
 
-		for (int i = 0; i < 10; i++)
-		{
-			float angle = 20.0f * i * (SDL_GetTicks() / 100000.0f);
-			glm::mat4 model = glm::mat4(1.0f);
-			model = glm::translate(model, glm::vec3(cubePositions[i]));
-			model = glm::rotate(model, angle, glm::vec3((float)i * 0.5f, (float)i * 0.34, (float)i));
-			setUniformMat4("model", model, shaderProgram);
-			glBindVertexArray(vao);
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-		}
+
+		glm::mat4 model = glm::mat4(1.0f);
+		setUniformMat4("model", model, shaderProgram);
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, diffuseMap);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, specularMap);
+
+		glBindVertexArray(vao);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
 
 		glUseProgram(lightShaderProgram);
-		glBindVertexArray(lightVAO);
 		setUniformMat4("projection", projection, lightShaderProgram);
 		setUniformMat4("view", view, lightShaderProgram);
-		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::mat4(1.0f);
 		model = glm::translate(model, lightPos);
-		model = glm::scale(model, glm::vec3(0.5f));
+		model = glm::scale(model, glm::vec3(0.2f));
 		setUniformMat4("model", model, lightShaderProgram);
+
+		glBindVertexArray(lightVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 
@@ -357,3 +267,41 @@ int main(int argc, char* argv[])
 
 	return 0;
 }
+
+unsigned int loadTexture(char const *filename)
+{
+	GLuint textureID;
+	glGenTextures(1, &textureID);
+
+	int width, height, nrComponents;
+
+	unsigned char * data = stbi_load(filename, &width, &height, &nrComponents, 0);
+	if (data)
+	{
+		GLenum format;
+		if (nrComponents == 1)
+			format = GL_RED;
+		else if (nrComponents == 3)
+			format = GL_RGB;
+		else if (nrComponents == 4)
+			format = GL_RGBA;
+
+		glBindTexture(GL_TEXTURE_2D, textureID);
+		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_LINEAR);
+
+		stbi_image_free(data);
+	}
+	else
+	{
+		std::cout << "FAILURE: FAILED TO LOAD TEXTURE" << filename << std::endl;
+		stbi_image_free(data);
+	}
+	return textureID;
+}
+
