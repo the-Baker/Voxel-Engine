@@ -128,7 +128,7 @@
     <None Include="lightFragShader.glsl" />
     <None Include="lightVertexShader.glsl" />
     <None Include="pointLightFragShader.glsl" />
-    <None Include="spotlightFragShader.glsl" />
+    <None Include="lightFragmentShader.glsl" />
     <None Include="vertexShader.glsl" />
   </ItemGroup>
   <ItemGroup>

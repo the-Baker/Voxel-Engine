@@ -38,7 +38,7 @@
     <None Include="pointLightFragShader.glsl">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="spotlightFragShader.glsl">
+    <None Include="lightFragmentShader.glsl">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

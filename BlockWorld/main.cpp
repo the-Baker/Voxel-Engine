@@ -71,12 +71,18 @@ glm::vec3 cubePositions[] = {
 	glm::vec3(-1.3f,  1.0f, -1.5f)
 };
 
+glm::vec3 pointLightPositions[] = {
+	glm::vec3(0.7f,  0.2f,  2.0f),
+	glm::vec3(2.3f, -3.3f, -4.0f),
+	glm::vec3(-4.0f,  2.0f, -12.0f),
+	glm::vec3(0.0f,  0.0f, -3.0f)
+};
 
 int main(int argc, char* argv[])
 {
 	bool gameShouldRun = true;
-	int windowWidth = 1920;
-	int windowHeight = 1080;
+	int windowWidth = 1280;
+	int windowHeight = 720;
 
 	SDL_Init(SDL_INIT_EVERYTHING);
 
@@ -93,9 +99,9 @@ int main(int argc, char* argv[])
 
 
 
-	GLuint shaderProgram = createShader("vertexShader.glsl", "spotLightFragShader.glsl");
-
+	GLuint shaderProgram = createShader("vertexShader.glsl", "lightFragmentShader.glsl");
 	GLuint lightShaderProgram = createShader("lightVertexShader.glsl", "lightFragShader.glsl");
+
 
 	GLuint vao;
 	GLuint vbo;
@@ -163,8 +169,6 @@ int main(int argc, char* argv[])
 		deltaTime = currentTime - lastTime;
 		lastTime = currentTime;
 
-
-
 		SDL_Event windowEvent;
 		while (SDL_PollEvent(&windowEvent))
 		{
@@ -189,8 +193,6 @@ int main(int argc, char* argv[])
 				}break;
 			}
 		}
-
-
 
 #if 1
 		int xOffset, yOffset;
@@ -219,21 +221,57 @@ int main(int argc, char* argv[])
 
 
 		glUseProgram(shaderProgram);
-		setUniformVec3("light.position", camera.position, shaderProgram);
-		setUniformVec3("light.direction", camera.front, shaderProgram);
-		setUniformFloat("light.cutOff", glm::cos(glm::radians(12.5f)), shaderProgram);
-		setUniformFloat("light.outerCutoff", glm::cos(glm::radians(17.5f)), shaderProgram);
 		setUniformVec3("viewPos", camera.position, shaderProgram);
-
-
-		setUniformVec3("light.ambient", glm::vec3(0.1f, 0.1f, 0.1f), shaderProgram);
-		setUniformVec3("light.diffuse", glm::vec3(0.8f, 0.8f, 0.8f), shaderProgram);
-		setUniformVec3("light.specular", glm::vec3(1.0f, 1.0f, 1.0f), shaderProgram);
-		setUniformFloat("light.constant", 1.0f, shaderProgram);
-		setUniformFloat("light.linear", 0.09f, shaderProgram);
-		setUniformFloat("light.quadratic", 0.032f, shaderProgram);
-
 		setUniformFloat("material.shininess", 32.0f, shaderProgram);
+
+		setUniformVec3("dirLight.direction", glm::vec3(-0.2f, -1.0f, -0.3f), shaderProgram);
+		setUniformVec3("dirLight.ambient", glm::vec3(0.05f, 0.05f, 0.05f), shaderProgram);
+		setUniformVec3("dirLight.diffuse", glm::vec3(0.4f, 0.4f, 0.4f), shaderProgram);
+		setUniformVec3("dirLight.specular", glm::vec3(0.5f, 0.5f, 0.5f), shaderProgram);
+
+		setUniformVec3("pointLights[0].position", pointLightPositions[0], shaderProgram);
+		setUniformVec3("pointLights[0].ambient", glm::vec3(0.05f, 0.05f, 0.05f), shaderProgram);
+		setUniformVec3("pointLights[0].diffuse", glm::vec3(0.8f, 0.8f, 0.8f), shaderProgram);
+		setUniformVec3("pointLights[0].specular", glm::vec3(1.0f, 1.0f, 1.0f), shaderProgram);
+		setUniformFloat("pointLights[0].constant", 1.0f, shaderProgram);
+		setUniformFloat("pointLights[0].linear", 0.09f, shaderProgram);
+		setUniformFloat("pointLights[0].quadratic", 0.032f, shaderProgram);
+
+		setUniformVec3("pointLights[1].position", pointLightPositions[1], shaderProgram);
+		setUniformVec3("pointLights[1].ambient", glm::vec3(0.05f, 0.05f, 0.05f), shaderProgram);
+		setUniformVec3("pointLights[1].diffuse", glm::vec3(0.8f, 0.8f, 0.8f), shaderProgram);
+		setUniformVec3("pointLights[1].specular", glm::vec3(1.0f, 1.0f, 1.0f), shaderProgram);
+		setUniformFloat("pointLights[1].constant", 1.0f, shaderProgram);
+		setUniformFloat("pointLights[1].linear", 0.09f, shaderProgram);
+		setUniformFloat("pointLights[1].quadratic", 0.032f, shaderProgram);
+
+		setUniformVec3("pointLights[2].position", pointLightPositions[2], shaderProgram);
+		setUniformVec3("pointLights[2].ambient", glm::vec3(0.05f, 0.05f, 0.05f), shaderProgram);
+		setUniformVec3("pointLights[2].diffuse", glm::vec3(0.8f, 0.8f, 0.8f), shaderProgram);
+		setUniformVec3("pointLights[2].specular", glm::vec3(1.0f, 1.0f, 1.0f), shaderProgram);
+		setUniformFloat("pointLights[2].constant", 1.0f, shaderProgram);
+		setUniformFloat("pointLights[2].linear", 0.09f, shaderProgram);
+		setUniformFloat("pointLights[2].quadratic", 0.032f, shaderProgram);
+
+		setUniformVec3("pointLights[3].position", pointLightPositions[3], shaderProgram);
+		setUniformVec3("pointLights[3].ambient", glm::vec3(0.05f, 0.05f, 0.05f), shaderProgram);
+		setUniformVec3("pointLights[3].diffuse", glm::vec3(0.8f, 0.8f, 0.8f), shaderProgram);
+		setUniformVec3("pointLights[3].specular", glm::vec3(1.0f, 1.0f, 1.0f), shaderProgram);
+		setUniformFloat("pointLights[3].constant", 1.0f, shaderProgram);
+		setUniformFloat("pointLights[3].linear", 0.09f, shaderProgram);
+		setUniformFloat("pointLights[3].quadratic", 0.032f, shaderProgram);
+
+		setUniformVec3("spotLight.position", camera.position, shaderProgram);
+		setUniformVec3("spotLight.direction", camera.front, shaderProgram);
+		setUniformVec3("spotLight.ambient", glm::vec3(0.0f, 0.0f, 0.0f), shaderProgram);
+		setUniformVec3("spotLight.diffuse", glm::vec3(1.0f, 1.0f, 1.0f), shaderProgram);
+		setUniformVec3("spotLight.specular", glm::vec3(1.0f, 1.0f, 1.0f), shaderProgram);
+		setUniformFloat("spotLight.constant", 1.0f, shaderProgram);
+		setUniformFloat("spotLight.linear", 0.09f, shaderProgram);
+		setUniformFloat("spotLight.quadratic", 0.032f, shaderProgram);
+		setUniformFloat("spotLight.cutOff", glm::cos(glm::radians(12.5f)), shaderProgram);
+		setUniformFloat("spotLight.outCutoff", glm::cos(glm::radians(15.0f)), shaderProgram);
+
 
 		glm::mat4 projection = glm::perspective(glm::radians(camera.fov), (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
 		glm::mat4 view = GetCameraViewMatrix(camera);
@@ -257,18 +295,21 @@ int main(int argc, char* argv[])
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
 
-		/*
+		
 		glUseProgram(lightShaderProgram);
 		setUniformMat4("projection", projection, lightShaderProgram);
 		setUniformMat4("view", view, lightShaderProgram);
-		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, lightPos);
-		model = glm::scale(model, glm::vec3(0.2f));
-		setUniformMat4("model", model, lightShaderProgram);
+		for (unsigned int i = 0; i < 4; i++)
+		{
+			glm::mat4 model = glm::mat4(1.0f);
+			model = glm::translate(model, pointLightPositions[i]);
+			model = glm::scale(model, glm::vec3(0.2f));
+			setUniformMat4("model", model, lightShaderProgram);
+			glBindVertexArray(lightVAO);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
 
-		glBindVertexArray(lightVAO);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		*/
+		
 
 		SDL_GL_SwapWindow(window);
 	}
