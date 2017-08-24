@@ -146,7 +146,6 @@ int main(int argc, char* argv[])
 	float lastTime = 0.0f;
 	float currentTime = 0.0f;
 
-
 	GLuint diffuseMap = loadTexture("container2.png");
 	GLuint specularMap = loadTexture("container2_specular2.png");
 
@@ -220,15 +219,14 @@ int main(int argc, char* argv[])
 
 
 		glUseProgram(shaderProgram);
-		setUniformVec3("light.position", lightPos, shaderProgram);
+		setUniformVec3("light.direction", glm::vec3(-0.2f, -1.0f, -0.3f), shaderProgram);
 		setUniformVec3("viewPos", camera.position, shaderProgram);
 
 		setUniformVec3("light.ambient", glm::vec3(0.2f, 0.2f, 0.2f), shaderProgram);
 		setUniformVec3("light.diffuse", glm::vec3(0.5f, 0.5f, 0.5f), shaderProgram);
 		setUniformVec3("light.specular", glm::vec3(1.0f, 1.0f, 1.0f), shaderProgram);
 
-		setUniformVec3("material.specular", glm::vec3(0.5f, 0.5f, 0.5f), shaderProgram);
-		setUniformFloat("material.shininess", 64.0f, shaderProgram);
+		setUniformFloat("material.shininess", 32.0f, shaderProgram);
 
 		glm::mat4 projection = glm::perspective(glm::radians(camera.fov), (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
 		glm::mat4 view = GetCameraViewMatrix(camera);
@@ -236,22 +234,27 @@ int main(int argc, char* argv[])
 		setUniformMat4("view", view, shaderProgram);
 
 
-		glm::mat4 model = glm::mat4(1.0f);
-		setUniformMat4("model", model, shaderProgram);
-
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, diffuseMap);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, specularMap);
 
 		glBindVertexArray(vao);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		for (int i = 0; i < 10; i++)
+		{
+			glm::mat4 model = glm::mat4(1.0f);
+			model = glm::translate(model, cubePositions[i]);
+			float angle = 20.0f * i;
+			model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+			setUniformMat4("model", model, shaderProgram);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
 
 
 		glUseProgram(lightShaderProgram);
 		setUniformMat4("projection", projection, lightShaderProgram);
 		setUniformMat4("view", view, lightShaderProgram);
-		model = glm::mat4(1.0f);
+		glm::mat4 model = glm::mat4(1.0f);
 		model = glm::translate(model, lightPos);
 		model = glm::scale(model, glm::vec3(0.2f));
 		setUniformMat4("model", model, lightShaderProgram);
