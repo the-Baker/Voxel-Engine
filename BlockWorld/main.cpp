@@ -1,17 +1,20 @@
 #include <SDL.h>
 #include <GL\glew.h>
 #include <iostream>
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+#include <vector>
+#include <assimp\Importer.hpp>
+#include <stdio.h>
+
 #include <glm\glm.hpp>
 #include <glm\gtc\matrix_transform.hpp>
 #include <glm\gtc\type_ptr.hpp>
 
 #include "shader.h"
 #include "camera.h"
+#include "Model.h"
 
 
-unsigned int loadTexture(char const* filename);
+
 
 float vertices[] = {
 	// positions          // normals           // texture coords
@@ -78,6 +81,7 @@ glm::vec3 pointLightPositions[] = {
 	glm::vec3(0.0f,  0.0f, -3.0f)
 };
 
+
 int main(int argc, char* argv[])
 {
 	bool gameShouldRun = true;
@@ -96,41 +100,16 @@ int main(int argc, char* argv[])
 
 	glewInit();
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
 
 
-
-	GLuint shaderProgram = createShader("vertexShader.glsl", "lightFragmentShader.glsl");
-	GLuint lightShaderProgram = createShader("lightVertexShader.glsl", "lightFragShader.glsl");
-
-
-	GLuint vao;
-	GLuint vbo;
-
-	glGenVertexArrays(1, &vao);
-	glGenBuffers(1, &vbo);
-
-
-	glBindVertexArray(vao);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-	glEnableVertexAttribArray(2);
-
-
-	GLuint lightVAO;
-	glGenVertexArrays(1, &lightVAO);
-	glBindVertexArray(lightVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
+	GLuint modelShader = createShader("modelVertexShader.glsl", "modelFragmentShader.glsl");
 
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
+	
+
 
 
 	Camera camera;
@@ -152,16 +131,16 @@ int main(int argc, char* argv[])
 	float lastTime = 0.0f;
 	float currentTime = 0.0f;
 
-	GLuint diffuseMap = loadTexture("container2.png");
-	GLuint specularMap = loadTexture("container2_specular2.png");
-
-	glUseProgram(shaderProgram);
-	setUniformInt("material.diffuse", 0, shaderProgram);
-	setUniformInt("material.specular", 1, shaderProgram);
-
-
 
 	int frame = 0;
+	Model hand;
+	LoadModel("A:\\Programming\\C++\\Projects\\BlockWorld\\BlockWorld\\resources\\Hand\\hand.OBJ", &hand);
+	Model nanosuit;
+	LoadModel("A:\\Programming\\C++\\Projects\\BlockWorld\\BlockWorld\\resources\\Nanosuit\\nanosuit.obj", &nanosuit);
+
+
+
+
 	while (gameShouldRun)
 	{
 	//	std::cout << "Start Frame " << frame++ << std::endl;
@@ -220,96 +199,25 @@ int main(int argc, char* argv[])
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
-		glUseProgram(shaderProgram);
-		setUniformVec3("viewPos", camera.position, shaderProgram);
-		setUniformFloat("material.shininess", 32.0f, shaderProgram);
+		
 
-		setUniformVec3("dirLight.direction", glm::vec3(-0.2f, -1.0f, -0.3f), shaderProgram);
-		setUniformVec3("dirLight.ambient", glm::vec3(0.05f, 0.05f, 0.05f), shaderProgram);
-		setUniformVec3("dirLight.diffuse", glm::vec3(0.4f, 0.4f, 0.4f), shaderProgram);
-		setUniformVec3("dirLight.specular", glm::vec3(0.5f, 0.5f, 0.5f), shaderProgram);
 
-		setUniformVec3("pointLights[0].position", pointLightPositions[0], shaderProgram);
-		setUniformVec3("pointLights[0].ambient", glm::vec3(0.05f, 0.05f, 0.05f), shaderProgram);
-		setUniformVec3("pointLights[0].diffuse", glm::vec3(0.8f, 0.8f, 0.8f), shaderProgram);
-		setUniformVec3("pointLights[0].specular", glm::vec3(1.0f, 1.0f, 1.0f), shaderProgram);
-		setUniformFloat("pointLights[0].constant", 1.0f, shaderProgram);
-		setUniformFloat("pointLights[0].linear", 0.09f, shaderProgram);
-		setUniformFloat("pointLights[0].quadratic", 0.032f, shaderProgram);
 
-		setUniformVec3("pointLights[1].position", pointLightPositions[1], shaderProgram);
-		setUniformVec3("pointLights[1].ambient", glm::vec3(0.05f, 0.05f, 0.05f), shaderProgram);
-		setUniformVec3("pointLights[1].diffuse", glm::vec3(0.8f, 0.8f, 0.8f), shaderProgram);
-		setUniformVec3("pointLights[1].specular", glm::vec3(1.0f, 1.0f, 1.0f), shaderProgram);
-		setUniformFloat("pointLights[1].constant", 1.0f, shaderProgram);
-		setUniformFloat("pointLights[1].linear", 0.09f, shaderProgram);
-		setUniformFloat("pointLights[1].quadratic", 0.032f, shaderProgram);
-
-		setUniformVec3("pointLights[2].position", pointLightPositions[2], shaderProgram);
-		setUniformVec3("pointLights[2].ambient", glm::vec3(0.05f, 0.05f, 0.05f), shaderProgram);
-		setUniformVec3("pointLights[2].diffuse", glm::vec3(0.8f, 0.8f, 0.8f), shaderProgram);
-		setUniformVec3("pointLights[2].specular", glm::vec3(1.0f, 1.0f, 1.0f), shaderProgram);
-		setUniformFloat("pointLights[2].constant", 1.0f, shaderProgram);
-		setUniformFloat("pointLights[2].linear", 0.09f, shaderProgram);
-		setUniformFloat("pointLights[2].quadratic", 0.032f, shaderProgram);
-
-		setUniformVec3("pointLights[3].position", pointLightPositions[3], shaderProgram);
-		setUniformVec3("pointLights[3].ambient", glm::vec3(0.05f, 0.05f, 0.05f), shaderProgram);
-		setUniformVec3("pointLights[3].diffuse", glm::vec3(0.8f, 0.8f, 0.8f), shaderProgram);
-		setUniformVec3("pointLights[3].specular", glm::vec3(1.0f, 1.0f, 1.0f), shaderProgram);
-		setUniformFloat("pointLights[3].constant", 1.0f, shaderProgram);
-		setUniformFloat("pointLights[3].linear", 0.09f, shaderProgram);
-		setUniformFloat("pointLights[3].quadratic", 0.032f, shaderProgram);
-
-		setUniformVec3("spotLight.position", camera.position, shaderProgram);
-		setUniformVec3("spotLight.direction", camera.front, shaderProgram);
-		setUniformVec3("spotLight.ambient", glm::vec3(0.0f, 0.0f, 0.0f), shaderProgram);
-		setUniformVec3("spotLight.diffuse", glm::vec3(1.0f, 1.0f, 1.0f), shaderProgram);
-		setUniformVec3("spotLight.specular", glm::vec3(1.0f, 1.0f, 1.0f), shaderProgram);
-		setUniformFloat("spotLight.constant", 1.0f, shaderProgram);
-		setUniformFloat("spotLight.linear", 0.09f, shaderProgram);
-		setUniformFloat("spotLight.quadratic", 0.032f, shaderProgram);
-		setUniformFloat("spotLight.cutOff", glm::cos(glm::radians(12.5f)), shaderProgram);
-		setUniformFloat("spotLight.outCutoff", glm::cos(glm::radians(15.0f)), shaderProgram);
-
+		glUseProgram(modelShader);
 
 		glm::mat4 projection = glm::perspective(glm::radians(camera.fov), (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
 		glm::mat4 view = GetCameraViewMatrix(camera);
-		setUniformMat4("projection", projection, shaderProgram);
-		setUniformMat4("view", view, shaderProgram);
+		setUniformMat4("projection", projection, modelShader);
+		setUniformMat4("view", view, modelShader);
 
+		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));
+		setUniformMat4("model", model, modelShader);
+		DrawModel(modelShader, &nanosuit);
 
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, diffuseMap);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, specularMap);
+			
 
-		glBindVertexArray(vao);
-		for (int i = 0; i < 10; i++)
-		{
-			glm::mat4 model = glm::mat4(1.0f);
-			model = glm::translate(model, cubePositions[i]);
-			float angle = 20.0f * i;
-			model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-			setUniformMat4("model", model, shaderProgram);
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-		}
-
-		
-		glUseProgram(lightShaderProgram);
-		setUniformMat4("projection", projection, lightShaderProgram);
-		setUniformMat4("view", view, lightShaderProgram);
-		for (unsigned int i = 0; i < 4; i++)
-		{
-			glm::mat4 model = glm::mat4(1.0f);
-			model = glm::translate(model, pointLightPositions[i]);
-			model = glm::scale(model, glm::vec3(0.2f));
-			setUniformMat4("model", model, lightShaderProgram);
-			glBindVertexArray(lightVAO);
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-		}
-
-		
 
 		SDL_GL_SwapWindow(window);
 	}
@@ -317,42 +225,5 @@ int main(int argc, char* argv[])
 
 
 	return 0;
-}
-
-unsigned int loadTexture(char const *filename)
-{
-	GLuint textureID;
-	glGenTextures(1, &textureID);
-
-	int width, height, nrComponents;
-
-	unsigned char * data = stbi_load(filename, &width, &height, &nrComponents, 0);
-	if (data)
-	{
-		GLenum format;
-		if (nrComponents == 1)
-			format = GL_RED;
-		else if (nrComponents == 3)
-			format = GL_RGB;
-		else if (nrComponents == 4)
-			format = GL_RGBA;
-
-		glBindTexture(GL_TEXTURE_2D, textureID);
-		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_LINEAR);
-
-		stbi_image_free(data);
-	}
-	else
-	{
-		std::cout << "FAILURE: FAILED TO LOAD TEXTURE" << filename << std::endl;
-		stbi_image_free(data);
-	}
-	return textureID;
 }
 

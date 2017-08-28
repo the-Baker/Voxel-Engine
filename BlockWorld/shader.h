@@ -1,3 +1,5 @@
+#pragma once
+
 #include <SDL.h>
 #include <GL\glew.h>
 #include <iostream>
@@ -7,14 +9,6 @@
 
 char* file_read(const char* filename);
 
-struct shader
-{
-	char* vShaderData;
-	char* fShaderData;
-	GLuint vertexShader;
-	GLuint fragmentShader;
-	GLuint shaderProgram;
-};
 
 GLuint createShader(const char* vertexPath, const char* fragmentPath)
 {

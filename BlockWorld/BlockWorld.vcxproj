@@ -82,11 +82,12 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>A:\Programming\C++\Libraries\glm-0.9.9-a1;A:\Programming\C++\Libraries\OpenGL\glew-2.1.0\include;A:\Programming\C++\Libraries\SDL2.0\SDL2-2.0.5\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>A:\Programming\C++\Libraries\assimp-3.1.1\include;A:\Programming\C++\Libraries\glm-0.9.9-a1;A:\Programming\C++\Libraries\OpenGL\glew-2.1.0\include;A:\Programming\C++\Libraries\SDL2.0\SDL2-2.0.5\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>A:\Programming\C++\Libraries\OpenGL\glew-2.1.0\lib\Release\x64;A:\Programming\C++\Libraries\SDL2.0\SDL2-2.0.5\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;glew32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>A:\Programming\C++\Libraries\assimp-3.1.1\lib64;A:\Programming\C++\Libraries\OpenGL\glew-2.1.0\lib\Release\x64;A:\Programming\C++\Libraries\SDL2.0\SDL2-2.0.5\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;glew32.lib;opengl32.lib;assimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
@@ -110,13 +111,14 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>A:\Programming\C++\Libraries\glm-0.9.9-a1;A:\Programming\C++\Libraries\OpenGL\glew-2.1.0\include;A:\Programming\C++\Libraries\SDL2.0\SDL2-2.0.5\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>A:\Programming\C++\Libraries\assimp-3.1.1\include;A:\Programming\C++\Libraries\glm-0.9.9-a1;A:\Programming\C++\Libraries\OpenGL\glew-2.1.0\include;A:\Programming\C++\Libraries\SDL2.0\SDL2-2.0.5\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>A:\Programming\C++\Libraries\OpenGL\glew-2.1.0\lib\Release\x64;A:\Programming\C++\Libraries\SDL2.0\SDL2-2.0.5\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;glew32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>A:\Programming\C++\Libraries\assimp-3.1.1\lib64;A:\Programming\C++\Libraries\OpenGL\glew-2.1.0\lib\Release\x64;A:\Programming\C++\Libraries\SDL2.0\SDL2-2.0.5\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;glew32.lib;opengl32.lib;assimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
@@ -127,12 +129,15 @@
     <None Include="fragmentShader.glsl" />
     <None Include="lightFragShader.glsl" />
     <None Include="lightVertexShader.glsl" />
+    <None Include="modelVShader.glsl" />
     <None Include="pointLightFragShader.glsl" />
     <None Include="lightFragmentShader.glsl" />
     <None Include="vertexShader.glsl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="camera.h" />
+    <ClInclude Include="mesh.h" />
+    <ClInclude Include="Model.h" />
     <ClInclude Include="shader.h" />
     <ClInclude Include="stb_image.h" />
   </ItemGroup>
