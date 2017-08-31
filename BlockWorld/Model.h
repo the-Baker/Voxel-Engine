@@ -2,6 +2,7 @@
 #include <assimp\Importer.hpp>
 #include <assimp\scene.h>
 #include <assimp\postprocess.h>
+#include <unordered_map>
 #include "mesh.h"
 
 std::vector<Texture> textures_loaded;
@@ -11,6 +12,12 @@ struct Model
 	std::vector<Mesh> meshes;
 	std::string directory;
 };
+struct ModelManager
+{
+	std::unordered_map<int, Model> modelMap;
+	int nexthandle = 1;
+};
+
 
 Mesh ProcessMesh(aiMesh *mesh, const aiScene *scene, Model *model);
 std::vector<Texture> LoadMaterialTextures(aiMaterial *material, aiTextureType type, std::string typeName, Model *model);
@@ -135,8 +142,16 @@ std::vector<Texture> LoadMaterialTextures(aiMaterial *material, aiTextureType ty
 	return textures;
 }
 
-void LoadModel(std::string path, Model *model)
+Model* getModel(ModelManager *modelManager, const int handle)
 {
+	return &modelManager->modelMap.find(handle)->second;
+}
+
+void LoadModel(std::string path, ModelManager *modelManager, const int newHandle)
+{
+	Model model = {};
+
+
 	Assimp::Importer importer;
 	const aiScene *scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals);
 
@@ -145,9 +160,11 @@ void LoadModel(std::string path, Model *model)
 		std::cout << "ERROR::ASSIMP::" << importer.GetErrorString() << std::endl;
 		return;
 	}
-	model->directory = path.substr(0, path.find_last_of('\\'));
-	ProcessNode(scene->mRootNode, scene, model);
+	model.directory = path.substr(0, path.find_last_of('\\'));
+	ProcessNode(scene->mRootNode, scene, &model);
+	modelManager->modelMap.insert(std::make_pair(newHandle, model));
 }
+
 
 void DrawModel(unsigned int shader, Model *model)
 {

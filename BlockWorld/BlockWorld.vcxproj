@@ -89,6 +89,8 @@
       <AdditionalLibraryDirectories>A:\Programming\C++\Libraries\assimp-3.1.1\lib64;A:\Programming\C++\Libraries\OpenGL\glew-2.1.0\lib\Release\x64;A:\Programming\C++\Libraries\SDL2.0\SDL2-2.0.5\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>SDL2.lib;SDL2main.lib;glew32.lib;opengl32.lib;assimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
+      <StackReserveSize>
+      </StackReserveSize>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -120,24 +122,23 @@
       <AdditionalLibraryDirectories>A:\Programming\C++\Libraries\assimp-3.1.1\lib64;A:\Programming\C++\Libraries\OpenGL\glew-2.1.0\lib\Release\x64;A:\Programming\C++\Libraries\SDL2.0\SDL2-2.0.5\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>SDL2.lib;SDL2main.lib;glew32.lib;opengl32.lib;assimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
+      <StackReserveSize>
+      </StackReserveSize>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="fragmentShader.glsl" />
-    <None Include="lightFragShader.glsl" />
-    <None Include="lightVertexShader.glsl" />
-    <None Include="modelVShader.glsl" />
-    <None Include="pointLightFragShader.glsl" />
-    <None Include="lightFragmentShader.glsl" />
+    <None Include="modelFragmentShader.glsl" />
+    <None Include="modelVertexShader.glsl" />
     <None Include="vertexShader.glsl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="camera.h" />
     <ClInclude Include="mesh.h" />
     <ClInclude Include="Model.h" />
+    <ClInclude Include="Player.h" />
     <ClInclude Include="shader.h" />
     <ClInclude Include="stb_image.h" />
   </ItemGroup>
