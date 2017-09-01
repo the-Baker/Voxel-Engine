@@ -9,6 +9,7 @@
 #include <glm\gtc\matrix_transform.hpp>
 #include <glm\gtc\type_ptr.hpp>
 
+
 #include "Player.h"
 #include "shader.h"
 #include "camera.h"
@@ -87,9 +88,15 @@ glm::vec3 pointLightPositions[] = {
 
 
 #define WORLD_BLOCKSIZE 1.0f
-#define WORLD_WIDTH 4
-#define WORLD_HEIGHT 4
-#define WORLD_DEPTH 4
+#define WORLD_WIDTH 3
+#define WORLD_HEIGHT 1
+#define WORLD_DEPTH 3
+
+#define CHUNK_WIDTH 16
+#define CHUNK_HEIGHT 1
+#define CHUNK_DEPTH 16
+#define CHUNK_NBLOCKS (CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_DEPTH)
+
 
 enum ToolRequired
 {
@@ -107,6 +114,37 @@ enum BlockType
 	BirchLog
 };
 
+
+
+inline double findnoise2(double x, double y)
+{
+		int n = (int)x + (int)y * 57;
+		n = (n << 13) ^ n;
+		int nn = (n*(n*n * 60493 + 19990303) + 1376312589) & 0x7fffffff;
+		return 1.0 - ((double)nn / 1073741824.0);
+}
+
+inline double interpolate1(double a, double b, double x)
+{
+	double ft = x * 3.1415927;
+	double f = (1.0 - cos(ft))* 0.5;
+	return a*(1.0 - f) + b*f;
+}	
+
+double noise(double x, double y)
+{
+	
+	double floorx = (double)((int)x);//This is kinda a cheap way to floor a double integer.
+	double floory = (double)((int)y);
+	double s, t, u, v;//Integer declaration
+	s = findnoise2(floorx, floory);
+	t = findnoise2(floorx + 1, floory);
+	u = findnoise2(floorx, floory + 1);//Get the surrounding pixels to calculate the transition.
+	v = findnoise2(floorx + 1, floory + 1);
+	double int1 = interpolate1(s, t, x - floorx);//Interpolate between the values	
+	double int2 = interpolate1(u, v, x - floorx);//Here we use x-floorx, to get 1st dimension. Don't mind the x-floorx thingie, it's part of the cosine formula	
+	return interpolate1(int1, int2, y - floory);//Here we use y-floory, to get the 2nd dimension.
+}
 
 void loadBlockModels(ModelManager *modelManager)
 {
@@ -131,35 +169,46 @@ struct Chunk
 	Block *blocks;
 };
 
+glm::ivec3 worldToChunkPos(glm::ivec3 chunkPos)
+{
+	return glm::ivec3(chunkPos.x * CHUNK_WIDTH, chunkPos.y * CHUNK_HEIGHT, chunkPos.z * CHUNK_DEPTH);
+}
+
 void initChunk(Chunk *chunk, ModelManager *modelManager)
 {
-	chunk->blocks = (Block*)calloc(36, sizeof(Block));
-	chunk->nBlocks = 36;
-	for (int z = 0; z < 6; z++)
+	chunk->blocks = (Block*)calloc(CHUNK_NBLOCKS, sizeof(Block));
+	chunk->nBlocks = CHUNK_NBLOCKS;
+
+
+	for (int z = 0; z < CHUNK_DEPTH; z++)
 	{
-		for (int x = 0; x < 6; x++)
+		for (int x = 0; x < CHUNK_WIDTH; x++)
 		{
-			Block* block = ((chunk->blocks + z * 6) + x);
-			block->position = chunk->position * glm::ivec3(x * 2, 1 * 2, z * 2);
+			Block* block = ((chunk->blocks + z * CHUNK_DEPTH) + x);
+			double height = noise(x - 5, z + 5);
+			block->position = worldToChunkPos(chunk->position) + glm::ivec3(x, (int)(height * 3), z);
 			block->blockType = BirchLog;
+			std::cout << "Block Init at: " << block->position.x << " " << block->position.y << " " << block->position.z << std::endl;
 		}
 	}
 }
 
 void drawChunk(Chunk *chunk,GLuint shader, ModelManager *modelManager)
 {
-	for (int z = 0; z < 6; z++)
+	for (int z = 0; z < CHUNK_DEPTH; z++)
 	{
-		for (int x = 0; x < 6; x++)
+		for (int x = 0; x < CHUNK_WIDTH; x++)
 		{
-			Block* block = ((chunk->blocks + z * 6) + x);
+			Block* block = ((chunk->blocks + z * CHUNK_DEPTH) + x);
 			glm::mat4 model = glm::mat4(1.0f);
 			model = glm::translate(model, glm::vec3(block->position));
+			model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
 			setUniformMat4("model", model, shader);
 			Model *DModel = getModel(modelManager, block->blockType);
 			DrawModel(shader, DModel);
 		}
 	}
+	
 }
 struct gameWorld
 {
@@ -169,16 +218,15 @@ struct gameWorld
 
 void initWorld(gameWorld *world, ModelManager *modelManager)
 {
-	for (int z = 0; z < 4; z++)
+	for (int z = 0; z < WORLD_DEPTH; z++)
 	{
-		for (int y = 0; y < 4; y++)
+		for (int y = 0; y < WORLD_HEIGHT; y++)
 		{
-			for (int x = 0; x < 4; x++)
+			for (int x = 0; x < WORLD_WIDTH; x++)
 			{
 				Chunk *chunk = world->chunks + x + y * WORLD_WIDTH + WORLD_HEIGHT * WORLD_DEPTH * z;
 				chunk->position = glm::ivec3(x, y, z);
 				initChunk(chunk, modelManager);
-				std::cout << "Chunk Init At: " << chunk->position.x << chunk->position.y << chunk->position.z << std::endl;
 			}
 		}
 	}
@@ -186,11 +234,11 @@ void initWorld(gameWorld *world, ModelManager *modelManager)
 
 void drawWorld(gameWorld *world, GLuint shader, ModelManager *modelManager)
 {
-	for (int z = 0; z < 4; z++)
+	for (int z = 0; z < WORLD_DEPTH; z++)
 	{
-		for (int y = 0 ; y < 4; y++)
+		for (int y = 0 ; y < WORLD_HEIGHT; y++)
 		{
-			for (int x = 0; x < 4; x++)
+			for (int x = 0; x < WORLD_WIDTH; x++)
 			{
 				Chunk *chunk = world->chunks + x + y * WORLD_WIDTH + WORLD_HEIGHT * WORLD_DEPTH * z;
 				drawChunk(chunk, shader, modelManager);

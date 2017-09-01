@@ -109,3 +109,38 @@ void DrawMesh(unsigned int shader, Mesh *mesh)
 
 	glActiveTexture(GL_TEXTURE0);
 }
+
+void DrawinstancedMesh(unsigned int shader, Mesh *mesh)
+{
+	GLuint diffuseNr = 1;
+	GLuint specularNr = 1;
+	GLuint normalNr = 1;
+	GLuint heightNr = 1;
+	for (unsigned int i = 0; i < mesh->textures.size(); i++)
+	{
+		glActiveTexture(GL_TEXTURE0 + i);
+		std::stringstream ss;
+		std::string number;
+		std::string name = mesh->textures[i].type;
+		if (name == "texture_diffuse")
+			ss << diffuseNr++;
+		else if (name == "texture_specular")
+			ss << specularNr++;
+		else if (name == "texture_normal")
+			ss << normalNr++;
+		else if (name == "texture_height")
+			ss << heightNr++;
+
+
+		number == ss.str();
+
+		glUniform1i(glGetUniformLocation(shader, (name + ss.str()).c_str()), i);
+		glBindTexture(GL_TEXTURE_2D, mesh->textures[i].id);
+	}
+
+	glBindVertexArray(mesh->vao);
+	glDrawElements(GL_TRIANGLES, mesh->indicies.size(), GL_UNSIGNED_INT, 0);
+	glBindVertexArray(0);
+
+	glActiveTexture(GL_TEXTURE0);
+}

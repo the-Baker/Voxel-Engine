@@ -65,8 +65,8 @@ void updatePlayer(Player *player)
 void movePlayer(Player *player, Move_Direction direction, float deltaTime)
 {
 	float velocity = player->moveSpeed * deltaTime;
-	glm::vec3 front = player->front * glm::vec3(1.0f, 0.0f, 1.0f);
-	glm::vec3 right = player->right * glm::vec3(1.0f, 0.0f, 1.0f);
+	glm::vec3 front = glm::normalize(player->front * glm::vec3(1.0f, 0.0f, 1.0f));
+	glm::vec3 right = glm::normalize(player->right * glm::vec3(1.0f, 0.0f, 1.0f));
 
 	if (direction == FORWARD)
 		player->position += front * velocity;
