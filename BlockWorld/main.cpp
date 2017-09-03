@@ -1,251 +1,28 @@
 #include <SDL.h>
+#include <SDL_thread.h>
 #include <GL\glew.h>
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <stdio.h>
+#include <thread>
 #include <assimp\Importer.hpp>
 
 #include <glm\glm.hpp>
 #include <glm\gtc\matrix_transform.hpp>
 #include <glm\gtc\type_ptr.hpp>
 
+#include "Utility.h"
 
 #include "Player.h"
+#include "Model.h"
+#include "Block.h"
 #include "shader.h"
 #include "camera.h"
-#include "Model.h"
-
-
-/*
-
-float vertices[] = {
-	// positions          // normals           // texture coords
-	-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
-	0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 0.0f,
-	0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
-	0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
-	-0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 1.0f,
-	-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
-
-	-0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 0.0f,
-	0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 0.0f,
-	0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 1.0f,
-	0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 1.0f,
-	-0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 1.0f,
-	-0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 0.0f,
-
-	-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-	-0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
-	-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-	-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-	-0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
-	-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-
-	0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-	0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
-	0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-	0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-	0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
-	0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-
-	-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
-	0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 1.0f,
-	0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
-	0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
-	-0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 0.0f,
-	-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
-
-	-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f,
-	0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 1.0f,
-	0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
-	0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
-	-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 0.0f,
-	-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f
-};
-*/
-glm::vec3 cubePositions[] = {
-	glm::vec3(0.0f,  0.0f,  0.0f),
-	glm::vec3(2.0f,  5.0f, -15.0f),
-	glm::vec3(-1.5f, -2.2f, -2.5f),
-	glm::vec3(-3.8f, -2.0f, -12.3f),
-	glm::vec3(2.4f, -0.4f, -3.5f),
-	glm::vec3(-1.7f,  3.0f, -7.5f),
-	glm::vec3(1.3f, -2.0f, -2.5f),
-	glm::vec3(1.5f,  2.0f, -2.5f),
-	glm::vec3(1.5f,  0.2f, -1.5f),
-	glm::vec3(-1.3f,  1.0f, -1.5f)
-};
-
-
-/*
-glm::vec3 pointLightPositions[] = {
-	glm::vec3(0.7f,  0.2f,  2.0f),
-	glm::vec3(2.3f, -3.3f, -4.0f),
-	glm::vec3(-4.0f,  2.0f, -12.0f),
-	glm::vec3(0.0f,  0.0f, -3.0f)
-};
-*/
-
-
-#define WORLD_BLOCKSIZE 1.0f
-#define WORLD_WIDTH 3
-#define WORLD_HEIGHT 1
-#define WORLD_DEPTH 3
-
-#define CHUNK_WIDTH 16
-#define CHUNK_HEIGHT 1
-#define CHUNK_DEPTH 16
-#define CHUNK_NBLOCKS (CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_DEPTH)
-
-
-enum ToolRequired
-{
-	WOOD,
-	STONE,
-	IRON,
-	GOLD,
-	DIAMOND
-};
-
-
-enum BlockType
-{
-	Dirt,
-	BirchLog
-};
+#include "noise.h"
 
 
 
-inline double findnoise2(double x, double y)
-{
-		int n = (int)x + (int)y * 57;
-		n = (n << 13) ^ n;
-		int nn = (n*(n*n * 60493 + 19990303) + 1376312589) & 0x7fffffff;
-		return 1.0 - ((double)nn / 1073741824.0);
-}
-
-inline double interpolate1(double a, double b, double x)
-{
-	double ft = x * 3.1415927;
-	double f = (1.0 - cos(ft))* 0.5;
-	return a*(1.0 - f) + b*f;
-}	
-
-double noise(double x, double y)
-{
-	
-	double floorx = (double)((int)x);//This is kinda a cheap way to floor a double integer.
-	double floory = (double)((int)y);
-	double s, t, u, v;//Integer declaration
-	s = findnoise2(floorx, floory);
-	t = findnoise2(floorx + 1, floory);
-	u = findnoise2(floorx, floory + 1);//Get the surrounding pixels to calculate the transition.
-	v = findnoise2(floorx + 1, floory + 1);
-	double int1 = interpolate1(s, t, x - floorx);//Interpolate between the values	
-	double int2 = interpolate1(u, v, x - floorx);//Here we use x-floorx, to get 1st dimension. Don't mind the x-floorx thingie, it's part of the cosine formula	
-	return interpolate1(int1, int2, y - floory);//Here we use y-floory, to get the 2nd dimension.
-}
-
-void loadBlockModels(ModelManager *modelManager)
-{
-	LoadModel("A:\\Programming\\C++\\Projects\\BlockWorld\\BlockWorld\\resources\\Cube\\CUBE.obj", modelManager, BirchLog);
-}
-
-struct Block
-{
-	float durability;	
-	float luminance;
-	ToolRequired toolRequired;
-	glm::ivec3 position;
-
-	BlockType blockType;
-	bool isRightClickable = false;
-};
-
-struct Chunk
-{
-	glm::ivec3 position;
-	int nBlocks;
-	Block *blocks;
-};
-
-glm::ivec3 worldToChunkPos(glm::ivec3 chunkPos)
-{
-	return glm::ivec3(chunkPos.x * CHUNK_WIDTH, chunkPos.y * CHUNK_HEIGHT, chunkPos.z * CHUNK_DEPTH);
-}
-
-void initChunk(Chunk *chunk, ModelManager *modelManager)
-{
-	chunk->blocks = (Block*)calloc(CHUNK_NBLOCKS, sizeof(Block));
-	chunk->nBlocks = CHUNK_NBLOCKS;
-
-
-	for (int z = 0; z < CHUNK_DEPTH; z++)
-	{
-		for (int x = 0; x < CHUNK_WIDTH; x++)
-		{
-			Block* block = ((chunk->blocks + z * CHUNK_DEPTH) + x);
-			double height = noise(x - 5, z + 5);
-			block->position = worldToChunkPos(chunk->position) + glm::ivec3(x, (int)(height * 3), z);
-			block->blockType = BirchLog;
-			std::cout << "Block Init at: " << block->position.x << " " << block->position.y << " " << block->position.z << std::endl;
-		}
-	}
-}
-
-void drawChunk(Chunk *chunk,GLuint shader, ModelManager *modelManager)
-{
-	for (int z = 0; z < CHUNK_DEPTH; z++)
-	{
-		for (int x = 0; x < CHUNK_WIDTH; x++)
-		{
-			Block* block = ((chunk->blocks + z * CHUNK_DEPTH) + x);
-			glm::mat4 model = glm::mat4(1.0f);
-			model = glm::translate(model, glm::vec3(block->position));
-			model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
-			setUniformMat4("model", model, shader);
-			Model *DModel = getModel(modelManager, block->blockType);
-			DrawModel(shader, DModel);
-		}
-	}
-	
-}
-struct gameWorld
-{
-	Chunk *chunks = new Chunk[WORLD_WIDTH * WORLD_HEIGHT * WORLD_DEPTH];
-	int nChunks = WORLD_WIDTH * WORLD_HEIGHT * WORLD_DEPTH;
-};
-
-void initWorld(gameWorld *world, ModelManager *modelManager)
-{
-	for (int z = 0; z < WORLD_DEPTH; z++)
-	{
-		for (int y = 0; y < WORLD_HEIGHT; y++)
-		{
-			for (int x = 0; x < WORLD_WIDTH; x++)
-			{
-				Chunk *chunk = world->chunks + x + y * WORLD_WIDTH + WORLD_HEIGHT * WORLD_DEPTH * z;
-				chunk->position = glm::ivec3(x, y, z);
-				initChunk(chunk, modelManager);
-			}
-		}
-	}
-}
-
-void drawWorld(gameWorld *world, GLuint shader, ModelManager *modelManager)
-{
-	for (int z = 0; z < WORLD_DEPTH; z++)
-	{
-		for (int y = 0 ; y < WORLD_HEIGHT; y++)
-		{
-			for (int x = 0; x < WORLD_WIDTH; x++)
-			{
-				Chunk *chunk = world->chunks + x + y * WORLD_WIDTH + WORLD_HEIGHT * WORLD_DEPTH * z;
-				drawChunk(chunk, shader, modelManager);
-			}
-		}
-	}
-}
 
 enum GAME_MODE
 {
@@ -253,22 +30,59 @@ enum GAME_MODE
 	WORLD
 };
 
-struct gameState
+struct GameState
 {
 	GAME_MODE mode;
 	Player player;
 	bool gameShouldRun = true;
+	bool shouldGenerate = true;
 	bool firstCamera = true;
 	float deltaTime = 0.0f;
 	float lastTime = 0.0f;
 	float currentTime = 0.0f;
+	std::vector<Block> blocks;
+	std::vector<glm::ivec3> usedPositions;
+	BlockDatabase bDatabase;
 };
 
-
-void initGame(gameState *state)
+void initGame(GameState *state, unsigned int shaderID)
 {
 	state->mode = WORLD;
 	initPlayer(&state->player);
+	loadBlockData(&state->bDatabase, shaderID);
+}
+
+static int generateWorld(void *state, glm::ivec3 playerBlockPos)
+{
+	GameState *gamestate = (GameState*)state;
+
+
+	if (gamestate->shouldGenerate)
+	{
+		for (int z = playerBlockPos.z - 8; z < playerBlockPos.z + 8; z++)
+		{
+			for (int y = 0; y < 1; y++)
+			{
+				for (int x = playerBlockPos.x - 8; x < playerBlockPos.x + 8; x++)
+				{
+					int height = (int)(noise((float)x / 7.0f, (float)z / 7.0f) * 3.0 + 16);
+					for (int i = 0; i <= height; i++)
+					{
+						if (i > height - 1)
+							placeBlock(Grass, glm::ivec3(x, i, z), &gamestate->blocks, &gamestate->usedPositions);
+						else if (i > height - 6)
+							placeBlock(Dirt, glm::ivec3(x, i, z), &gamestate->blocks, &gamestate->usedPositions);
+						else if (i == 0)
+							placeBlock(Bedrock, glm::ivec3(x, i, z), &gamestate->blocks, &gamestate->usedPositions);
+						else
+							placeBlock(StoneBrick, glm::ivec3(x, i, z), &gamestate->blocks, &gamestate->usedPositions);
+					}
+				}
+			}
+		}
+	}
+
+	return 1;
 }
 
 int main(int argc, char* argv[])
@@ -288,37 +102,36 @@ int main(int argc, char* argv[])
 
 	glewInit();
 	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE);
+	//glEnable(GL_CULL_FACE);
 
 
-	GLuint modelShader = createShader("modelVertexShader.glsl", "modelFragmentShader.glsl");
-
+	//GLuint modelShader = createShader("CubeInstanceVertexShader.glsl", "CubeInstanceFragmentShader.glsl");
+	GLuint texturedShader = createShader("TexturedVertexShader.glsl", "TexturedFragmentShader.glsl");
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 	
 
 
-	gameState state;
-	initGame(&state);
+	GameState state;
+	initGame(&state, texturedShader);
 
 
-	ModelManager modelManager;
-	loadBlockModels(&modelManager);
-	
-	//LoadModel("A:\\Programming\\C++\\Projects\\BlockWorld\\BlockWorld\\resources\\Cube\\CUBE.obj", &modelManager);
 
-	gameWorld world;
-	initWorld(&world, &modelManager);
+	bool firstrun = true;
 
 
 
 	while (state.gameShouldRun)
 	{
-	//	std::cout << "Start Frame " << frame++ << std::endl;
 		state.currentTime = SDL_GetTicks() / 1000.0f;
 		state.deltaTime = state.currentTime - state.lastTime;
 		state.lastTime = state.currentTime;
+
+
+		//std::cout << state.deltaTime << std::endl;
+		glm::vec3 playerPos = state.player.position;
+		glm::ivec3 playerBlockPos = glm::ivec3(roundFloatToInt(playerPos.x), roundFloatToInt(playerPos.y), roundFloatToInt(playerPos.z));
 
 		SDL_Event windowEvent;
 		while (SDL_PollEvent(&windowEvent))
@@ -340,7 +153,40 @@ int main(int argc, char* argv[])
 				case SDL_KEYDOWN:
 				{
 					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_ESCAPE)
+					{
 						state.gameShouldRun = false;
+					}
+					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_P)
+					{
+						state.shouldGenerate = false;
+						std::cout << state.shouldGenerate << std::endl;
+					}
+					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_L)
+					{
+						state.shouldGenerate = true;
+						std::cout << state.shouldGenerate << std::endl;
+					}
+					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_1)
+					{
+						placeBlock(Grass, playerBlockPos, &state.blocks, &state.usedPositions);
+					}
+					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_2)
+					{
+						placeBlock(Dirt, playerBlockPos, &state.blocks, &state.usedPositions);
+					}
+					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_3)
+					{
+						placeBlock(StoneBrick, playerBlockPos, &state.blocks, &state.usedPositions);
+					}
+					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_4)
+					{
+						placeBlock(Bedrock, playerBlockPos, &state.blocks, &state.usedPositions);
+					}
+					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_RETURN)
+					{
+						state.blocks.clear();
+						state.usedPositions.clear();
+					}
 				}break;
 			}
 		}
@@ -367,28 +213,33 @@ int main(int argc, char* argv[])
 		updatePlayer(&state.player);
 #endif // 0
 
+		generateWorld(&state, playerBlockPos);
+
 
 		glViewport(0, 0, windowWidth, windowHeight);
 		glClearColor(9.0f / 255.0f, 64.0f / 255.0f, 255.0f / 255.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
-	
-
-
-		glUseProgram(modelShader);
-
-		glm::mat4 projection = glm::perspective(glm::radians(state.player.camera.fov), (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
+		glUseProgram(texturedShader);
+		glm::mat4 projection = glm::perspective(glm::radians(state.player.camera.fov), (float)windowWidth / (float)windowHeight, 0.1f, state.player.camera.viewDistance);
 		glm::mat4 view = GetCameraViewMatrix(state.player.camera);
-		setUniformMat4("projection", projection, modelShader);
-		setUniformMat4("view", view, modelShader);
+		setUniformMat4("projection", projection, texturedShader);
+		setUniformMat4("view", view, texturedShader);
 
-		drawWorld(&world, modelShader, &modelManager);
+		
+		for (int i = 0; i < state.blocks.size(); i++)
+		{
+			glm::mat4 model = glm::mat4(1.0f);
+			model = glm::translate(model, (glm::vec3)state.usedPositions[i]);
+			setUniformMat4("model", model, texturedShader);
+			drawBlock(state.blocks[i], &state.bDatabase);
+		}
+		
 
 		SDL_GL_SwapWindow(window);
 	}
 
-//	delete [] world.blocks;
+
 
 	return 0;
 }

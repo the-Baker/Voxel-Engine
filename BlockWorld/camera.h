@@ -25,6 +25,7 @@ struct Camera
 
 	float mouseSensitivity;
 	float fov;
+	float viewDistance = 250.0f;
 };
 
 glm::mat4 GetCameraViewMatrix(Camera camera)

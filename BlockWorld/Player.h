@@ -2,7 +2,8 @@
 
 #include "camera.h"
 
-enum Move_Direction {
+enum Move_Direction 
+{
 	FORWARD,
 	BACKWARD,
 	LEFT,
@@ -20,7 +21,7 @@ struct Player
 	float lookSensitivity = SENSITIVTY;
 	Camera camera;
 	glm::vec3 position;
-	glm::vec3 cameraOffset = glm::vec3(0.0f, 1.0f, 0.0f);
+	glm::vec3 cameraOffset = glm::vec3(0.0f, 2.0f, 0.0f);
 	glm::vec3 worldUp = glm::vec3(0.0f, 1.0f, 0.0f);
 	glm::vec3 front;
 	glm::vec3 right;
@@ -50,7 +51,7 @@ void updatePlayerVectors(Player *player)
 
 void updatePlayer(Player *player)
 {
-	player->camera.position = player->position;
+	player->camera.position = player->position + player->cameraOffset;
 	player->camera.yaw = player->yaw;
 	player->camera.pitch = player->pitch;
 	player->camera.front = player->front;

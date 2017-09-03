@@ -32,6 +32,18 @@
     <None Include="modelFragmentShader.glsl">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="CubeInstanceVertexShader.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="CubeInstanceFragmentShader.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="TexturedVertexShader.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="TexturedFragmentShader.glsl">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stb_image.h">
@@ -43,16 +55,19 @@
     <ClInclude Include="shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mesh.h">
+    <ClInclude Include="Player.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="noise.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Model.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Player.h">
+    <ClInclude Include="Block.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Perlin.h">
+    <ClInclude Include="Utility.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
