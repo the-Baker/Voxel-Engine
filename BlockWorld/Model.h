@@ -50,7 +50,7 @@ struct Texture2D
 struct RawModel
 {
 	unsigned int vaoID;
-	unsigned int indexCount;
+	unsigned int vertexCount;
 };
 
 struct TexturedModel
@@ -63,7 +63,7 @@ void drawModel(RawModel model)
 {
 	glBindVertexArray(model.vaoID);
 	glEnableVertexAttribArray(0);
-	glDrawElements(GL_TRIANGLES, model.indexCount, GL_UNSIGNED_INT, 0);
+	glDrawArrays(GL_TRIANGLES, 0, model.vertexCount);
 	glBindVertexArray(0);
 }
 
@@ -74,7 +74,7 @@ void drawTexturedModel(TexturedModel model)
 	glEnableVertexAttribArray(1);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, model.texture.id);
-	glDrawElements(GL_TRIANGLES, model.model.indexCount, GL_UNSIGNED_INT, 0);
+	glDrawArrays(GL_TRIANGLES, 0, model.model.vertexCount);
 	glBindVertexArray(0);
 }
 
@@ -96,7 +96,7 @@ void bindAttribute(unsigned int shader, char* variableName, int attributeNumber)
 	glBindAttribLocation(shader, attributeNumber, variableName);
 }
 
-void bindIndexBuffer(unsigned int *indices, unsigned int indexCount)
+void bindIndexBuffer(float *indices, unsigned int indexCount)
 {
 	unsigned int ebo;
 	glGenBuffers(1, &ebo);
@@ -104,7 +104,7 @@ void bindIndexBuffer(unsigned int *indices, unsigned int indexCount)
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indexCount, indices, GL_STATIC_DRAW);
 }
 
-RawModel loadToVAO(float *vertices, unsigned int vertexCount, unsigned int *indices, unsigned int indexCount, float *uvs, unsigned int uvCount)
+RawModel loadToVAO(float *vertices, unsigned int vertexCount, float *uvs, unsigned int uvCount)
 {
 	unsigned int vao;
 	glGenVertexArrays(1, &vao);
@@ -112,8 +112,7 @@ RawModel loadToVAO(float *vertices, unsigned int vertexCount, unsigned int *indi
 	storeDataInAttributeList(vertices, vertexCount, 0, 3);
 	storeDataInAttributeList(uvs, uvCount, 1, 2);
 
-	bindIndexBuffer(indices, indexCount);
 	glBindVertexArray(0);
-	return RawModel({ vao, indexCount });
+	return RawModel({ vao, vertexCount });
 }
 

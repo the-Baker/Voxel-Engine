@@ -59,11 +59,11 @@ static int generateWorld(void *state, glm::ivec3 playerBlockPos)
 
 	if (gamestate->shouldGenerate)
 	{
-		for (int z = playerBlockPos.z - 8; z < playerBlockPos.z + 8; z++)
+		for (int z = playerBlockPos.z - GENERATE_HALF_SIZE; z < playerBlockPos.z + GENERATE_HALF_SIZE; z++)
 		{
 			for (int y = 0; y < 1; y++)
 			{
-				for (int x = playerBlockPos.x - 8; x < playerBlockPos.x + 8; x++)
+				for (int x = playerBlockPos.x - GENERATE_HALF_SIZE; x < playerBlockPos.x + GENERATE_HALF_SIZE; x++)
 				{
 					int height = (int)(noise((float)x / 7.0f, (float)z / 7.0f) * 3.0 + 16);
 					for (int i = 0; i <= height; i++)
@@ -102,7 +102,7 @@ int main(int argc, char* argv[])
 
 	glewInit();
 	glEnable(GL_DEPTH_TEST);
-	//glEnable(GL_CULL_FACE);
+	glEnable(GL_CULL_FACE);
 
 
 	//GLuint modelShader = createShader("CubeInstanceVertexShader.glsl", "CubeInstanceFragmentShader.glsl");
@@ -169,6 +169,8 @@ int main(int argc, char* argv[])
 					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_1)
 					{
 						placeBlock(Grass, playerBlockPos, &state.blocks, &state.usedPositions);
+						std::cout << playerBlockPos.x << " " << playerBlockPos.y << " " << playerBlockPos.z << std::endl;
+						std::cout << playerPos.x << " " << playerPos.y << " " << playerPos.z << std::endl;
 					}
 					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_2)
 					{
