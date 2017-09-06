@@ -1,7 +1,10 @@
+OPTIMIZATION
 multithreading
 frustum culling
 mesh generation
 
+texture atlas
+different block faces, different textures
 
 
 instancing of blocks

@@ -4,7 +4,7 @@
 
 #include "Model.h"
 
-#define GENERATE_HALF_SIZE 16
+#define GENERATE_HALF_SIZE 2
 
 
 float vertices[] =

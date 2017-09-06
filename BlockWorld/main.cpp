@@ -1,5 +1,6 @@
 #include <SDL.h>
 #include <SDL_thread.h>
+#include <SDL_mutex.h>
 #include <GL\glew.h>
 #include <iostream>
 #include <fstream>
@@ -36,13 +37,19 @@ struct GameState
 	Player player;
 	bool gameShouldRun = true;
 	bool shouldGenerate = true;
-	bool firstCamera = true;
+	bool firstRun = true;
 	float deltaTime = 0.0f;
 	float lastTime = 0.0f;
 	float currentTime = 0.0f;
 	std::vector<Block> blocks;
 	std::vector<glm::ivec3> usedPositions;
 	BlockDatabase bDatabase;
+};
+
+
+struct DebugState
+{
+	bool isWireFrame = false;
 };
 
 void initGame(GameState *state, unsigned int shaderID)
@@ -52,18 +59,18 @@ void initGame(GameState *state, unsigned int shaderID)
 	loadBlockData(&state->bDatabase, shaderID);
 }
 
-static int generateWorld(void *state, glm::ivec3 playerBlockPos)
+
+int generateWorldAroundPosition(void *state, glm::ivec3 pos, int radius)
 {
 	GameState *gamestate = (GameState*)state;
 
-
 	if (gamestate->shouldGenerate)
 	{
-		for (int z = playerBlockPos.z - GENERATE_HALF_SIZE; z < playerBlockPos.z + GENERATE_HALF_SIZE; z++)
+		for (int z = pos.z - radius; z < pos.z + radius; z++)
 		{
 			for (int y = 0; y < 1; y++)
 			{
-				for (int x = playerBlockPos.x - GENERATE_HALF_SIZE; x < playerBlockPos.x + GENERATE_HALF_SIZE; x++)
+				for (int x = pos.x - radius; x < pos.x + radius; x++)
 				{
 					int height = (int)(noise((float)x / 7.0f, (float)z / 7.0f) * 3.0 + 16);
 					for (int i = 0; i <= height; i++)
@@ -112,10 +119,12 @@ int main(int argc, char* argv[])
 	glBindVertexArray(0);
 	
 
-
 	GameState state;
+	DebugState debugState;
 	initGame(&state, texturedShader);
 
+	//SDL_mutex *generationMutex;
+	//SDL_Thread *generationThread = SDL_CreateThread(generateWorld, "generateWorld", (void*)&state);
 
 
 	bool firstrun = true;
@@ -169,8 +178,6 @@ int main(int argc, char* argv[])
 					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_1)
 					{
 						placeBlock(Grass, playerBlockPos, &state.blocks, &state.usedPositions);
-						std::cout << playerBlockPos.x << " " << playerBlockPos.y << " " << playerBlockPos.z << std::endl;
-						std::cout << playerPos.x << " " << playerPos.y << " " << playerPos.z << std::endl;
 					}
 					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_2)
 					{
@@ -188,6 +195,10 @@ int main(int argc, char* argv[])
 					{
 						state.blocks.clear();
 						state.usedPositions.clear();
+					}
+					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_T)
+					{
+						debugState.isWireFrame = !debugState.isWireFrame;
 					}
 				}break;
 			}
@@ -215,12 +226,26 @@ int main(int argc, char* argv[])
 		updatePlayer(&state.player);
 #endif // 0
 
-		generateWorld(&state, playerBlockPos);
+
+		if (state.firstRun)
+		{
+			generateWorldAroundPosition(&state, glm::ivec3(0, 0, 0), 16);
+			state.shouldGenerate = false;
+		}
+
+		if (state.shouldGenerate)
+			generateWorldAroundPosition(&state, playerBlockPos, GENERATE_HALF_SIZE);
 
 
 		glViewport(0, 0, windowWidth, windowHeight);
 		glClearColor(9.0f / 255.0f, 64.0f / 255.0f, 255.0f / 255.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		if (debugState.isWireFrame)
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		else
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
 
 		glUseProgram(texturedShader);
 		glm::mat4 projection = glm::perspective(glm::radians(state.player.camera.fov), (float)windowWidth / (float)windowHeight, 0.1f, state.player.camera.viewDistance);
@@ -239,6 +264,7 @@ int main(int argc, char* argv[])
 		
 
 		SDL_GL_SwapWindow(window);
+		state.firstRun = false;
 	}
 
 

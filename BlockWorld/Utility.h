@@ -11,3 +11,4 @@ int roundFloatToInt(float f)
 	else if (f <= 0)
 		return int(f - 0.5f);
 }
+
