@@ -4,7 +4,7 @@
 
 #include "Model.h"
 
-#define GENERATE_HALF_SIZE 2
+#define GENERATE_HALF_SIZE 4
 
 
 float vertices[] =
@@ -188,11 +188,3 @@ void drawBlock(Block block, BlockDatabase *database)
 	drawTexturedModel(model);
 }
 
-void placeBlock(BlockID id, glm::ivec3 pos, std::vector<Block> *blocks, std::vector<glm::ivec3> *usedPositions)
-{
-	if (!(std::find(usedPositions->begin(), usedPositions->end(), pos) != usedPositions->end()))
-	{
-		blocks->push_back(Block{ id });
-		usedPositions->push_back(glm::ivec3(pos));
-	}
-}

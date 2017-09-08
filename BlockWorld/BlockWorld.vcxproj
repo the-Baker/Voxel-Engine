@@ -141,6 +141,7 @@
   <ItemGroup>
     <ClInclude Include="Block.h" />
     <ClInclude Include="camera.h" />
+    <ClInclude Include="Chunk.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="noise.h" />
     <ClInclude Include="Player.h" />

@@ -18,6 +18,7 @@
 #include "Player.h"
 #include "Model.h"
 #include "Block.h"
+#include "Chunk.h"
 #include "shader.h"
 #include "camera.h"
 #include "noise.h"
@@ -41,8 +42,7 @@ struct GameState
 	float deltaTime = 0.0f;
 	float lastTime = 0.0f;
 	float currentTime = 0.0f;
-	std::vector<Block> blocks;
-	std::vector<glm::ivec3> usedPositions;
+	Chunk *chunks = new Chunk[WORLD_NCHUNKS];
 	BlockDatabase bDatabase;
 };
 
@@ -52,37 +52,35 @@ struct DebugState
 	bool isWireFrame = false;
 };
 
-void initGame(GameState *state, unsigned int shaderID)
-{
-	state->mode = WORLD;
-	initPlayer(&state->player);
-	loadBlockData(&state->bDatabase, shaderID);
-}
 
 
-int generateWorldAroundPosition(void *state, glm::ivec3 pos, int radius)
+int generateWorldAroundPosition(void *state, glm::ivec3 pos, int size)
 {
 	GameState *gamestate = (GameState*)state;
 
 	if (gamestate->shouldGenerate)
 	{
-		for (int z = pos.z - radius; z < pos.z + radius; z++)
+		for (int z = pos.z; z < pos.z + size; z++)
 		{
 			for (int y = 0; y < 1; y++)
 			{
-				for (int x = pos.x - radius; x < pos.x + radius; x++)
+				for (int x = pos.x; x < pos.x + size; x++)
 				{
 					int height = (int)(noise((float)x / 7.0f, (float)z / 7.0f) * 3.0 + 16);
 					for (int i = 0; i <= height; i++)
 					{
+						glm::ivec3 positionToPlace = glm::ivec3(x, i, z);
+						Chunk *chunk = findChunkAtWorldPos(gamestate->chunks, positionToPlace);
+						///*
 						if (i > height - 1)
-							placeBlock(Grass, glm::ivec3(x, i, z), &gamestate->blocks, &gamestate->usedPositions);
+							placeBlock(Grass, positionToPlace, chunk);
 						else if (i > height - 6)
-							placeBlock(Dirt, glm::ivec3(x, i, z), &gamestate->blocks, &gamestate->usedPositions);
+							placeBlock(Dirt, positionToPlace, chunk);
 						else if (i == 0)
-							placeBlock(Bedrock, glm::ivec3(x, i, z), &gamestate->blocks, &gamestate->usedPositions);
+							placeBlock(Bedrock, positionToPlace, chunk);
 						else
-							placeBlock(StoneBrick, glm::ivec3(x, i, z), &gamestate->blocks, &gamestate->usedPositions);
+							placeBlock(StoneBrick, positionToPlace, chunk);
+						//*/
 					}
 				}
 			}
@@ -90,6 +88,27 @@ int generateWorldAroundPosition(void *state, glm::ivec3 pos, int radius)
 	}
 
 	return 1;
+}
+
+void initGame(GameState *state, unsigned int shaderID)
+{
+	state->mode = WORLD;
+	initPlayer(&state->player);
+	loadBlockData(&state->bDatabase, shaderID);
+
+	for (int z = 0; z < WORLD_DEPTH; z++)
+	{
+		for (int y = 0; y < WORLD_HEIGHT; y++)
+		{
+			for (int x = 0; x < WORLD_WIDTH; x++)
+			{
+				glm::ivec3 chunkPos = glm::ivec3(x, y, z);
+				Chunk* chunk = &state->chunks[z * WORLD_HEIGHT * WORLD_WIDTH + y * WORLD_WIDTH + x];
+				chunk->position = glm::ivec3(x * CHUNK_SIZE, y * CHUNK_SIZE, z * CHUNK_SIZE);
+				std::cout << x << " " << y << " " << z << std::endl;
+			}
+		}
+	}
 }
 
 int main(int argc, char* argv[])
@@ -112,7 +131,7 @@ int main(int argc, char* argv[])
 	glEnable(GL_CULL_FACE);
 
 
-	//GLuint modelShader = createShader("CubeInstanceVertexShader.glsl", "CubeInstanceFragmentShader.glsl");
+
 	GLuint texturedShader = createShader("TexturedVertexShader.glsl", "TexturedFragmentShader.glsl");
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -122,9 +141,6 @@ int main(int argc, char* argv[])
 	GameState state;
 	DebugState debugState;
 	initGame(&state, texturedShader);
-
-	//SDL_mutex *generationMutex;
-	//SDL_Thread *generationThread = SDL_CreateThread(generateWorld, "generateWorld", (void*)&state);
 
 
 	bool firstrun = true;
@@ -138,9 +154,11 @@ int main(int argc, char* argv[])
 		state.lastTime = state.currentTime;
 
 
-		//std::cout << state.deltaTime << std::endl;
+
 		glm::vec3 playerPos = state.player.position;
 		glm::ivec3 playerBlockPos = glm::ivec3(roundFloatToInt(playerPos.x), roundFloatToInt(playerPos.y), roundFloatToInt(playerPos.z));
+		Chunk *playerChunk = findChunkAtWorldPos(state.chunks, playerBlockPos);
+
 
 		SDL_Event windowEvent;
 		while (SDL_PollEvent(&windowEvent))
@@ -165,40 +183,40 @@ int main(int argc, char* argv[])
 					{
 						state.gameShouldRun = false;
 					}
-					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_P)
-					{
-						state.shouldGenerate = false;
-						std::cout << state.shouldGenerate << std::endl;
-					}
 					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_L)
 					{
 						state.shouldGenerate = true;
 						std::cout << state.shouldGenerate << std::endl;
 					}
-					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_1)
+					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_P)
 					{
-						placeBlock(Grass, playerBlockPos, &state.blocks, &state.usedPositions);
-					}
-					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_2)
-					{
-						placeBlock(Dirt, playerBlockPos, &state.blocks, &state.usedPositions);
-					}
-					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_3)
-					{
-						placeBlock(StoneBrick, playerBlockPos, &state.blocks, &state.usedPositions);
-					}
-					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_4)
-					{
-						placeBlock(Bedrock, playerBlockPos, &state.blocks, &state.usedPositions);
-					}
-					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_RETURN)
-					{
-						state.blocks.clear();
-						state.usedPositions.clear();
+						state.shouldGenerate = false;
+						std::cout << state.shouldGenerate << std::endl;
 					}
 					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_T)
 					{
 						debugState.isWireFrame = !debugState.isWireFrame;
+					}
+					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_1)
+					{
+						placeBlock(Grass, playerBlockPos, playerChunk);
+					}
+					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_2)
+					{
+						placeBlock(Dirt, playerBlockPos, playerChunk);
+					}
+					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_3)
+					{
+						placeBlock(StoneBrick, playerBlockPos, playerChunk);
+					}
+					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_4)
+					{
+						placeBlock(Bedrock, playerBlockPos, playerChunk);
+					}
+					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_RETURN)
+					{
+						//state.chunk.blocks.clear();
+						//state.chunk.blockPositions.clear();
 					}
 				}break;
 			}
@@ -226,7 +244,6 @@ int main(int argc, char* argv[])
 		updatePlayer(&state.player);
 #endif // 0
 
-
 		if (state.firstRun)
 		{
 			generateWorldAroundPosition(&state, glm::ivec3(0, 0, 0), 16);
@@ -253,13 +270,15 @@ int main(int argc, char* argv[])
 		setUniformMat4("projection", projection, texturedShader);
 		setUniformMat4("view", view, texturedShader);
 
-		
-		for (int i = 0; i < state.blocks.size(); i++)
+		for (int z = 0; z < WORLD_DEPTH; z++)
 		{
-			glm::mat4 model = glm::mat4(1.0f);
-			model = glm::translate(model, (glm::vec3)state.usedPositions[i]);
-			setUniformMat4("model", model, texturedShader);
-			drawBlock(state.blocks[i], &state.bDatabase);
+			for (int y = 0; y < WORLD_HEIGHT; y++)
+			{
+				for (int x = 0; x < WORLD_WIDTH; x++)
+				{
+					drawChunk(&state.chunks[z * WORLD_HEIGHT * WORLD_WIDTH + y * WORLD_WIDTH + x], &state.bDatabase, texturedShader);
+				}
+			}
 		}
 		
 

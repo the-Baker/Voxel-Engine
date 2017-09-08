@@ -3,6 +3,8 @@ multithreading
 frustum culling
 mesh generation
 
+Skybox
+
 texture atlas
 different block faces, different textures
 
