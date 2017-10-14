@@ -4,7 +4,7 @@
 
 #include "Model.h"
 
-#define GENERATE_HALF_SIZE 4
+#define GENERATE_HALF_SIZE 8
 
 
 float vertices[] =
@@ -169,7 +169,7 @@ void loadBlockData(BlockDatabase *database, unsigned int shaderID)
 
 struct Block
 {
-	BlockID id;
+	uint8_t id;
 };
 
 BlockData getBlockData(Block block, BlockDatabase *database)
