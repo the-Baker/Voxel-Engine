@@ -17,6 +17,23 @@ int roundFloatToInt(float f)
 		return 0;
 }
 
+glm::ivec3 roundToMultiple(glm::ivec3 toRound, int multiple)
+{
+	glm::ivec3 result;
+	result.x = (toRound.x / multiple) * multiple;
+	result.y = (toRound.y / multiple) * multiple;
+	result.z = (toRound.z / multiple) * multiple;
+	return toRound;
+}
+
+glm::ivec2 roundToMultiple(glm::ivec2 toRound, int multiple)
+{
+	glm::ivec3 result;
+	result.x = (toRound.x / multiple) * multiple;
+	result.y = (toRound.y / multiple) * multiple;
+	return toRound;
+}
+
 int ThreeToOneD(glm::ivec3 vector, int width, int height)
 {
 	return (vector.x + width * (vector.y + vector.z * height));

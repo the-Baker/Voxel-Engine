@@ -87,17 +87,50 @@ int generateWorldAroundPosition(void *state, glm::ivec3 pos, int size)
 	return 1;
 }
 
+void generateChunk(GameState *state, glm::ivec2 position)
+{
+	initChunk(position, state);
+	glm::ivec3 chunkBottomLeft(position.x * CHUNK_SIZE, 0, position.y * CHUNK_SIZE);
+	for (int z = chunkBottomLeft.z; z < chunkBottomLeft.z + CHUNK_SIZE; z++)
+	{
+		for (int y = 0; y < 1; y++)
+		{
+			for (int x = chunkBottomLeft.x; x < chunkBottomLeft.x + CHUNK_SIZE; x++)
+			{
+				int height = (int)(noise((float)x / 5.0f, (float)z / 7.0f) * 3.0 + 16);
+				height = 16;
+				for (int i = 0; i < height; i++)
+				{
+					glm::ivec3 positionToPlace = glm::ivec3(x, i, z);
+					Chunk *chunk = &state->chunks.at(TwoToOneD(glm::ivec2(positionToPlace.x, positionToPlace.z) / CHUNK_SIZE, CHUNK_SIZE));
+
+					///*
+					if (i >= height - 1)
+						placeBlock(Grass, positionToPlace, chunk);
+					else if (i > height - 6)
+						placeBlock(Dirt, positionToPlace, chunk);
+					else if (i == 0)
+						placeBlock(Bedrock, positionToPlace, chunk);
+					else
+						placeBlock(StoneBrick, positionToPlace, chunk);
+					//*/
+				}
+			}
+		}
+	}
+}
+
 void initGame(GameState *state, unsigned int shaderID)
 {
 	state->mode = WORLD;
 	initPlayer(&state->player);
 	loadBlockData(&state->bDatabase, shaderID);
-	for (int z = 0; z < 8; z++)
+	for (int z = 0; z < WORLD_SIZE; z++)
 	{
-		for (int x = 0; x < 8; x++)
+		for (int x = 0; x < WORLD_SIZE; x++)
 		{
 			glm::ivec2 positionToInit(x, z);
-			initChunk(glm::ivec2(x, z), state);
+			generateChunk(state, positionToInit);
 		}
 	}
 }
@@ -247,7 +280,7 @@ int main(int argc, char* argv[])
 
 		if (state.firstRun)
 		{
-			generateWorldAroundPosition(&state, glm::ivec3(0, 0, 0), CHUNK_SIZE);
+			//generateWorldAroundPosition(&state, state.player.position, CHUNK_SIZE);
 			state.shouldGenerate = false;
 			std::cout << "===========================================" << std::endl;
 		}
@@ -274,10 +307,15 @@ int main(int argc, char* argv[])
 		setUniformMat4("projection", projection, texturedShader);
 		setUniformMat4("view", view, texturedShader);
 
+		int blockCounter = 0;
+		int chunkCounter = 0;
 		for (std::unordered_map<int, Chunk>::iterator iter = state.chunks.begin(); iter != state.chunks.end(); ++iter)
 		{
 			drawChunk((Chunk*)&iter->second, &state.bDatabase, texturedShader);
+			blockCounter += iter->second.blocks.size();
 		}
+
+
 
 		SDL_GL_SwapWindow(window);
 		state.firstRun = false;

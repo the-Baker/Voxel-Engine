@@ -9,12 +9,9 @@
 #include "GameState.h"
 #include "Utility.h"
 
-#define CHUNK_SIZE 8
+#define CHUNK_SIZE 16
 
-#define WORLD_WIDTH  16
-#define WORLD_HEIGHT 16
-#define WORLD_DEPTH  16
-#define WORLD_NCHUNKS (WORLD_WIDTH * WORLD_HEIGHT * WORLD_DEPTH)
+#define WORLD_SIZE  2
 
 
 
@@ -58,11 +55,28 @@ void initChunk(glm::ivec2 position, GameState *state)
 	Chunk chunk = {};
 	chunk.position = position;
 	
-	if (!(std::find(state->activeChunkPositions.begin(), state->activeChunkPositions.end(), position) != state->activeChunkPositions.end()))
+	if (!(std::find(state->activeChunkPositions.begin(), state->activeChunkPositions.end(), roundToMultiple(position, CHUNK_SIZE)) != state->activeChunkPositions.end()))
 	{
-		state->chunks.insert(std::make_pair(TwoToOneD(position, CHUNK_SIZE), chunk));
-		state->activeChunkPositions.push_back(position);
+		state->chunks.insert(std::make_pair(TwoToOneD(roundToMultiple(position, CHUNK_SIZE), CHUNK_SIZE), chunk));
+		state->activeChunkPositions.push_back(roundToMultiple(position, CHUNK_SIZE));
 		debugState.nChunks++;
+		std::cout << "CHUNK INITED AT POSITION: " << chunk.position.x << " " << chunk.position.y << " " << debugState.nChunks << std::endl;
 	}
-	//std::cout << "CHUNK INITED AT POSITION: " << chunk.position.x << " " << chunk->position.y << " " << chunk->position.z << std::endl;
+}
+
+struct ChunkMesh
+{
+	float vertices[CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE];
+};
+
+ChunkMesh generateChunkMesh(Chunk* chunk)
+{
+	ChunkMesh mesh;
+	for (int i = 0; i < chunk->blockPositions.size(); i++)
+	{
+
+	}
+
+
+	return mesh;
 }
