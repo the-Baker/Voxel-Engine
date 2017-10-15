@@ -61,7 +61,7 @@ int generateWorldAroundPosition(void *state, glm::ivec3 pos, int size)
 				for (int x = pos.x; x < pos.x + size; x++)
 				{
 					int height = (int)(noise((float)x / 5.0f, (float)z / 7.0f) * 3.0 + 16);
-					height = 32;
+					//height = 512;
 					for (int i = 0; i <= height; i++)
 					{
 						glm::ivec3 positionToPlace = glm::ivec3(x, i, z);
@@ -91,6 +91,7 @@ void generateChunk(GameState *state, glm::ivec2 position)
 {
 	initChunk(position, state);
 	glm::ivec3 chunkBottomLeft(position.x * CHUNK_SIZE, 0, position.y * CHUNK_SIZE);
+	Chunk *chunk = &state->chunks.at(TwoToOneD(position, CHUNK_SIZE));
 	for (int z = chunkBottomLeft.z; z < chunkBottomLeft.z + CHUNK_SIZE; z++)
 	{
 		for (int y = 0; y < 1; y++)
@@ -98,11 +99,11 @@ void generateChunk(GameState *state, glm::ivec2 position)
 			for (int x = chunkBottomLeft.x; x < chunkBottomLeft.x + CHUNK_SIZE; x++)
 			{
 				int height = (int)(noise((float)x / 5.0f, (float)z / 7.0f) * 3.0 + 16);
-				height = 16;
+				height = 8;
 				for (int i = 0; i < height; i++)
 				{
 					glm::ivec3 positionToPlace = glm::ivec3(x, i, z);
-					Chunk *chunk = &state->chunks.at(TwoToOneD(glm::ivec2(positionToPlace.x, positionToPlace.z) / CHUNK_SIZE, CHUNK_SIZE));
+
 
 					///*
 					if (i >= height - 1)
@@ -118,6 +119,7 @@ void generateChunk(GameState *state, glm::ivec2 position)
 			}
 		}
 	}
+	generateChunkMesh(chunk);
 }
 
 void initGame(GameState *state, unsigned int shaderID)
@@ -312,7 +314,7 @@ int main(int argc, char* argv[])
 		for (std::unordered_map<int, Chunk>::iterator iter = state.chunks.begin(); iter != state.chunks.end(); ++iter)
 		{
 			drawChunk((Chunk*)&iter->second, &state.bDatabase, texturedShader);
-			blockCounter += iter->second.blocks.size();
+			blockCounter += (int)iter->second.blocks.size();
 		}
 
 

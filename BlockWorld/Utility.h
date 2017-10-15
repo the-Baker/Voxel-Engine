@@ -44,3 +44,20 @@ int TwoToOneD(glm::ivec2 vector, int width)
 	return (vector.x + width * vector.y);
 }
 
+int vec3ToInt(glm::ivec3 vector)
+{
+	int result = 0;
+	result = (vector.x << 24);
+	result = result | (vector.y << 16);
+	result = result | (vector.z << 8);
+	return result;
+}
+
+glm::ivec3 intToVec3(int integer)
+{
+	glm::ivec3 result;
+	result.x = integer >> 24;
+	result.y = (integer >> 16) & (0x000000ff);
+	result.z = (integer >> 8)  & (0x000000ff);
+	return result;
+}
