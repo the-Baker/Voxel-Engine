@@ -4,7 +4,10 @@
 
 #include "Model.h"
 
-#define GENERATE_HALF_SIZE 8
+#define GENERATE_HALF_SIZE 16
+
+#define BLOCK_HALF_SIZE 0.5f
+#define BLOCK_SIZE 1.0f
 
 
 float vertices[] =
@@ -152,6 +155,11 @@ struct BlockDatabase
 	BlockData *blocks;
 };
 
+struct Block
+{
+	uint8_t id;
+};
+
 void loadBlockData(BlockDatabase *database, unsigned int shaderID)
 {
 	database->blocks = (BlockData*)calloc(NUM_BLOCK_TYPES, sizeof(BlockData));
@@ -167,10 +175,6 @@ void loadBlockData(BlockDatabase *database, unsigned int shaderID)
 	}
 }
 
-struct Block
-{
-	uint8_t id;
-};
 
 BlockData getBlockData(Block block, BlockDatabase *database)
 {

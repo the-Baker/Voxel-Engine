@@ -15,7 +15,7 @@ enum Move_Direction
 
 struct Player
 {
-	float moveSpeed = 10.0f;
+	float moveSpeed = 25.0f;
 	float yaw = 0.0f;
 	float pitch = 0.0f;
 	float lookSensitivity = SENSITIVTY;

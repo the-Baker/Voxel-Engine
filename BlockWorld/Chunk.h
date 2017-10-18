@@ -9,9 +9,9 @@
 #include "GameState.h"
 #include "Utility.h"
 
-#define CHUNK_SIZE 2
+#define CHUNK_SIZE 16
 
-#define WORLD_SIZE  2
+#define WORLD_SIZE  4
 
 
 
@@ -40,7 +40,7 @@ struct Chunk
 void placeBlock(BlockID id, glm::ivec3 pos, Chunk *chunk)
 {
 	int hashKey = vec3ToInt(pos);
-	if (chunk->blocks.count(hashKey) > 0)
+	if (chunk->blocks.count(hashKey) == 0)
 	{
 		chunk->blocks.insert(std::make_pair(hashKey, Block{ (uint8_t)id }));
 		chunk->blockPositions.push_back(glm::ivec3(pos));
@@ -52,15 +52,10 @@ void placeBlock(BlockID id, glm::ivec3 pos, Chunk *chunk)
 
 void drawChunk(Chunk * chunk, BlockDatabase *bDatabase, unsigned int shader)
 {
-	for (int i = 0; i < chunk->blockPositions.size(); i++)
-	{
-		glm::vec3 position = chunk->blockPositions[i];
-		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, position);
-		setUniformMat4("model", model, shader);
-		drawModel(chunk->mesh.model);
-		//drawBlock(chunk->blocks.at(vec3ToInt(position)), bDatabase);
-	}
+	glm::mat4 model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(1, 1, 1));
+	setUniformMat4("model", model, shader);
+	drawModel(chunk->mesh.model);
 }
 
 void initChunk(glm::ivec2 position, GameState *state)
@@ -85,62 +80,182 @@ void generateChunkMesh(Chunk* chunk)
 	for (int i = 0; i < chunk->blockPositions.size(); i++)
 	{
 		glm::ivec3 position = chunk->blockPositions[i];
-		if (position.x > 0 && position.x < CHUNK_SIZE && position.y > 0 && position.y < CHUNK_SIZE && position.z > 0 && position.z < CHUNK_SIZE)
+		
+		bool leftEmpty  = (chunk->blocks.count(vec3ToInt(glm::ivec3(position.x - 1, position.y, position.z))) == 0);
+		bool rightEmpty = (chunk->blocks.count(vec3ToInt(glm::ivec3(position.x + 1, position.y, position.z))) == 0);
+		bool upEmpty    = (chunk->blocks.count(vec3ToInt(glm::ivec3(position.x, position.y + 1, position.z))) == 0);
+		bool downEmpty  = (chunk->blocks.count(vec3ToInt(glm::ivec3(position.x, position.y - 1, position.z))) == 0);
+		bool frontEmpty = (chunk->blocks.count(vec3ToInt(glm::ivec3(position.x, position.y, position.z + 1))) == 0);
+		bool backEmpty  = (chunk->blocks.count(vec3ToInt(glm::ivec3(position.x, position.y, position.z - 1))) == 0);
+
+
+		if(leftEmpty)
 		{
-			if (!(chunk->blocks.at(vec3ToInt(glm::ivec3(position.x - 1, position.y, position.z))).id > 0))
-			{
-				chunk->mesh.vertices.push_back(position.x);
-				chunk->mesh.vertices.push_back(position.y);
-				chunk->mesh.vertices.push_back(position.z);
+			chunk->mesh.vertices.push_back(position.x);
+			chunk->mesh.vertices.push_back(position.y);
+			chunk->mesh.vertices.push_back(position.z);
 
-				chunk->mesh.vertices.push_back(position.x);
-				chunk->mesh.vertices.push_back(position.y + 1.0f);
-				chunk->mesh.vertices.push_back(position.z);
+			chunk->mesh.vertices.push_back(position.x);
+			chunk->mesh.vertices.push_back(position.y + BLOCK_SIZE);
+			chunk->mesh.vertices.push_back(position.z);
 
-				chunk->mesh.vertices.push_back(position.x);
-				chunk->mesh.vertices.push_back(position.y + 1.0f);
-				chunk->mesh.vertices.push_back(position.z - 1.0f);
+			chunk->mesh.vertices.push_back(position.x);
+			chunk->mesh.vertices.push_back(position.y + BLOCK_SIZE);
+			chunk->mesh.vertices.push_back(position.z - BLOCK_SIZE);
 
-				chunk->mesh.vertices.push_back(position.x);
-				chunk->mesh.vertices.push_back(position.y);
-				chunk->mesh.vertices.push_back(position.z);
 
-				chunk->mesh.vertices.push_back(position.x);
-				chunk->mesh.vertices.push_back(position.y + 1.0f);
-				chunk->mesh.vertices.push_back(position.z - 1.0f);
+			chunk->mesh.vertices.push_back(position.x);
+			chunk->mesh.vertices.push_back(position.y);
+			chunk->mesh.vertices.push_back(position.z);
 
-				chunk->mesh.vertices.push_back(position.x);
-				chunk->mesh.vertices.push_back(position.y);
-				chunk->mesh.vertices.push_back(position.z - 1.0f);
-			}
-			if (!(chunk->blocks.at(vec3ToInt(glm::ivec3(position.x, position.y - 1, position.z))).id > 0))
-			{
-				chunk->mesh.vertices.push_back(position.x);
-				chunk->mesh.vertices.push_back(position.y);
-				chunk->mesh.vertices.push_back(position.z);
+			chunk->mesh.vertices.push_back(position.x);
+			chunk->mesh.vertices.push_back(position.y + BLOCK_SIZE);
+			chunk->mesh.vertices.push_back(position.z - BLOCK_SIZE);
 
-				chunk->mesh.vertices.push_back(position.x);
-				chunk->mesh.vertices.push_back(position.y);
-				chunk->mesh.vertices.push_back(position.z - 1.0f);
+			chunk->mesh.vertices.push_back(position.x);
+			chunk->mesh.vertices.push_back(position.y);
+			chunk->mesh.vertices.push_back(position.z - BLOCK_SIZE);
+		}
 
-				chunk->mesh.vertices.push_back(position.x + 1.0f);
-				chunk->mesh.vertices.push_back(position.y);
-				chunk->mesh.vertices.push_back(position.z - 1.0f);
+		if(rightEmpty)
+		{
+			chunk->mesh.vertices.push_back(position.x + BLOCK_SIZE);
+			chunk->mesh.vertices.push_back(position.y);
+			chunk->mesh.vertices.push_back(position.z);
 
-				chunk->mesh.vertices.push_back(position.x);
-				chunk->mesh.vertices.push_back(position.y);
-				chunk->mesh.vertices.push_back(position.z);
+			chunk->mesh.vertices.push_back(position.x + BLOCK_SIZE);
+			chunk->mesh.vertices.push_back(position.y);
+			chunk->mesh.vertices.push_back(position.z -	BLOCK_SIZE);
 
-				chunk->mesh.vertices.push_back(position.x + 1.0f);
-				chunk->mesh.vertices.push_back(position.y);
-				chunk->mesh.vertices.push_back(position.z);
+			chunk->mesh.vertices.push_back(position.x + BLOCK_SIZE);
+			chunk->mesh.vertices.push_back(position.y + BLOCK_SIZE);
+			chunk->mesh.vertices.push_back(position.z - BLOCK_SIZE);
 
-				chunk->mesh.vertices.push_back(position.x + 1.0f);
-				chunk->mesh.vertices.push_back(position.y);
-				chunk->mesh.vertices.push_back(position.z - 1.0f);
-			}
+
+			chunk->mesh.vertices.push_back(position.x + BLOCK_SIZE);
+			chunk->mesh.vertices.push_back(position.y);
+			chunk->mesh.vertices.push_back(position.z);
+
+			chunk->mesh.vertices.push_back(position.x + BLOCK_SIZE);
+			chunk->mesh.vertices.push_back(position.y + BLOCK_SIZE);
+			chunk->mesh.vertices.push_back(position.z - BLOCK_SIZE);
+
+			chunk->mesh.vertices.push_back(position.x + BLOCK_SIZE);
+			chunk->mesh.vertices.push_back(position.y + BLOCK_SIZE);
+			chunk->mesh.vertices.push_back(position.z);
+		}
+
+		if (upEmpty)
+		{
+			chunk->mesh.vertices.push_back(position.x);
+			chunk->mesh.vertices.push_back(position.y + BLOCK_SIZE);
+			chunk->mesh.vertices.push_back(position.z);
+
+			chunk->mesh.vertices.push_back(position.x + BLOCK_SIZE);
+			chunk->mesh.vertices.push_back(position.y + BLOCK_SIZE);
+			chunk->mesh.vertices.push_back(position.z);
+
+			chunk->mesh.vertices.push_back(position.x + BLOCK_SIZE);
+			chunk->mesh.vertices.push_back(position.y + BLOCK_SIZE);
+			chunk->mesh.vertices.push_back(position.z - BLOCK_SIZE);
+
+
+			chunk->mesh.vertices.push_back(position.x);
+			chunk->mesh.vertices.push_back(position.y + BLOCK_SIZE);
+			chunk->mesh.vertices.push_back(position.z);
+
+			chunk->mesh.vertices.push_back(position.x + BLOCK_SIZE);
+			chunk->mesh.vertices.push_back(position.y + BLOCK_SIZE);
+			chunk->mesh.vertices.push_back(position.z - BLOCK_SIZE);
+
+			chunk->mesh.vertices.push_back(position.x);
+			chunk->mesh.vertices.push_back(position.y + BLOCK_SIZE);
+			chunk->mesh.vertices.push_back(position.z - BLOCK_SIZE);
+		}
+
+		if (downEmpty)
+		{
+			chunk->mesh.vertices.push_back(position.x);
+			chunk->mesh.vertices.push_back(position.y);
+			chunk->mesh.vertices.push_back(position.z);
+
+			chunk->mesh.vertices.push_back(position.x);
+			chunk->mesh.vertices.push_back(position.y);
+			chunk->mesh.vertices.push_back(position.z - BLOCK_SIZE);
+
+			chunk->mesh.vertices.push_back(position.x + BLOCK_SIZE);
+			chunk->mesh.vertices.push_back(position.y);
+			chunk->mesh.vertices.push_back(position.z - BLOCK_SIZE);
+
+
+			chunk->mesh.vertices.push_back(position.x);
+			chunk->mesh.vertices.push_back(position.y);
+			chunk->mesh.vertices.push_back(position.z);
+
+			chunk->mesh.vertices.push_back(position.x + BLOCK_SIZE);
+			chunk->mesh.vertices.push_back(position.y);
+			chunk->mesh.vertices.push_back(position.z - BLOCK_SIZE);
+
+			chunk->mesh.vertices.push_back(position.x + BLOCK_SIZE);
+			chunk->mesh.vertices.push_back(position.y);
+			chunk->mesh.vertices.push_back(position.z);
+		}
+
+		if (frontEmpty)
+		{
+			chunk->mesh.vertices.push_back(position.x);
+			chunk->mesh.vertices.push_back(position.y);
+			chunk->mesh.vertices.push_back(position.z);
+
+			chunk->mesh.vertices.push_back(position.x + BLOCK_SIZE);
+			chunk->mesh.vertices.push_back(position.y);
+			chunk->mesh.vertices.push_back(position.z);
+
+			chunk->mesh.vertices.push_back(position.x + BLOCK_SIZE);
+			chunk->mesh.vertices.push_back(position.y + BLOCK_SIZE);
+			chunk->mesh.vertices.push_back(position.z);
+
+
+			chunk->mesh.vertices.push_back(position.x);
+			chunk->mesh.vertices.push_back(position.y);
+			chunk->mesh.vertices.push_back(position.z);
+
+			chunk->mesh.vertices.push_back(position.x + BLOCK_SIZE);
+			chunk->mesh.vertices.push_back(position.y + BLOCK_SIZE);
+			chunk->mesh.vertices.push_back(position.z);
+
+			chunk->mesh.vertices.push_back(position.x);
+			chunk->mesh.vertices.push_back(position.y + BLOCK_SIZE);
+			chunk->mesh.vertices.push_back(position.z);
+		}
+
+		if (backEmpty)
+		{
+			chunk->mesh.vertices.push_back(position.x + BLOCK_SIZE);
+			chunk->mesh.vertices.push_back(position.y);
+			chunk->mesh.vertices.push_back(position.z - BLOCK_SIZE);
+
+			chunk->mesh.vertices.push_back(position.x);
+			chunk->mesh.vertices.push_back(position.y);
+			chunk->mesh.vertices.push_back(position.z - BLOCK_SIZE);
+
+			chunk->mesh.vertices.push_back(position.x);
+			chunk->mesh.vertices.push_back(position.y + BLOCK_SIZE);
+			chunk->mesh.vertices.push_back(position.z - BLOCK_SIZE);
+
+
+			chunk->mesh.vertices.push_back(position.x + BLOCK_SIZE);
+			chunk->mesh.vertices.push_back(position.y);
+			chunk->mesh.vertices.push_back(position.z - BLOCK_SIZE);
+
+			chunk->mesh.vertices.push_back(position.x);
+			chunk->mesh.vertices.push_back(position.y + BLOCK_SIZE);
+			chunk->mesh.vertices.push_back(position.z - BLOCK_SIZE);
+
+			chunk->mesh.vertices.push_back(position.x + BLOCK_SIZE);
+			chunk->mesh.vertices.push_back(position.y + BLOCK_SIZE);
+			chunk->mesh.vertices.push_back(position.z - BLOCK_SIZE);
 		}
 	}
-
-	chunk->mesh.model = loadToVAO(&chunk->mesh.vertices[0], chunk->mesh.vertices.size(), 0, 0);
+	chunk->mesh.model = loadToVAO(&chunk->mesh.vertices[0], chunk->mesh.vertices.size(), uvs, ARRAY_COUNT(uvs));
 }

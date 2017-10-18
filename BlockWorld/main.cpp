@@ -99,7 +99,7 @@ void generateChunk(GameState *state, glm::ivec2 position)
 			for (int x = chunkBottomLeft.x; x < chunkBottomLeft.x + CHUNK_SIZE; x++)
 			{
 				int height = (int)(noise((float)x / 5.0f, (float)z / 7.0f) * 3.0 + 16);
-				height = 8;
+				//height = 32;
 				for (int i = 0; i < height; i++)
 				{
 					glm::ivec3 positionToPlace = glm::ivec3(x, i, z);
@@ -114,7 +114,7 @@ void generateChunk(GameState *state, glm::ivec2 position)
 						placeBlock(Bedrock, positionToPlace, chunk);
 					else
 						placeBlock(StoneBrick, positionToPlace, chunk);
-					//*/
+
 				}
 			}
 		}
@@ -228,7 +228,7 @@ int main(int argc, char* argv[])
 					}
 					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_2)
 					{
-						if (!checkChunkExists(glm::ivec2(playerBlockPos.x, playerBlockPos.z), &state))
+					//	if (!checkChunkExists(glm::ivec2(playerBlockPos.x, playerBlockPos.z), &state))
 						{
 							initChunk(glm::ivec2(playerBlockPos.x, playerBlockPos.z), &state);
 						}
@@ -236,7 +236,7 @@ int main(int argc, char* argv[])
 					}
 					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_3)
 					{
-						if (checkChunkExists(glm::ivec2(playerBlockPos.x, playerBlockPos.z), &state))
+					//	if (checkChunkExists(glm::ivec2(playerBlockPos.x, playerBlockPos.z), &state))
 						{
 							initChunk(glm::ivec2(playerBlockPos.x, playerBlockPos.z), &state);
 						}
@@ -244,7 +244,7 @@ int main(int argc, char* argv[])
 					}
 					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_4)
 					{
-						if (checkChunkExists(glm::ivec2(playerBlockPos.x, playerBlockPos.z), &state))
+					//	if (checkChunkExists(glm::ivec2(playerBlockPos.x, playerBlockPos.z), &state))
 						{
 							initChunk(glm::ivec2(playerBlockPos.x, playerBlockPos.z), &state);
 						}
