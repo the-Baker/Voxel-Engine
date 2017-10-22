@@ -30,8 +30,8 @@
 Chunk* findChunkAtWorldPos(GameState *gamestate, glm::ivec3 position)
 {
 	glm::ivec2 chunkPos;
-	chunkPos.x = (position.x / CHUNK_SIZE) * CHUNK_SIZE;
-	chunkPos.y = (position.z / CHUNK_SIZE) * CHUNK_SIZE;
+	chunkPos.x = (position.x / CHUNK_SIZE);
+	chunkPos.y = (position.z / CHUNK_SIZE);
 	if (std::find(gamestate->activeChunkPositions.begin(), gamestate->activeChunkPositions.end(), chunkPos) != gamestate->activeChunkPositions.end())
 	{
 		return &gamestate->chunks.at(TwoToOneD(chunkPos, CHUNK_SIZE));
@@ -45,7 +45,7 @@ Chunk* findChunkAtWorldPos(GameState *gamestate, glm::ivec3 position)
 
 bool checkChunkExists(glm::ivec2 position, GameState *state)
 {
-	return (state->chunks.find(TwoToOneD(position, CHUNK_SIZE)) != state->chunks.end());
+	return (std::find(state->activeChunkPositions.begin(), state->activeChunkPositions.end(), glm::ivec2(position.x / CHUNK_SIZE, position.y / CHUNK_SIZE)) != state->activeChunkPositions.end());
 }
 
 int generateWorldAroundPosition(void *state, glm::ivec3 pos, int size)
@@ -61,7 +61,7 @@ int generateWorldAroundPosition(void *state, glm::ivec3 pos, int size)
 				for (int x = pos.x; x < pos.x + size; x++)
 				{
 					int height = (int)(noise((float)x / 5.0f, (float)z / 7.0f) * 3.0 + 16);
-					//height = 512;
+					//height = CHUNK_SIZE;
 					for (int i = 0; i <= height; i++)
 					{
 						glm::ivec3 positionToPlace = glm::ivec3(x, i, z);
@@ -76,7 +76,7 @@ int generateWorldAroundPosition(void *state, glm::ivec3 pos, int size)
 						else if (i == 0)
 							placeBlock(Bedrock, positionToPlace, chunk);
 						else
-							placeBlock(StoneBrick, positionToPlace, chunk);
+							placeBlock(Stone, positionToPlace, chunk);
 						//*/
 					}
 				}
@@ -99,7 +99,7 @@ void generateChunk(GameState *state, glm::ivec2 position)
 			for (int x = chunkBottomLeft.x; x < chunkBottomLeft.x + CHUNK_SIZE; x++)
 			{
 				int height = (int)(noise((float)x / 5.0f, (float)z / 7.0f) * 3.0 + 16);
-				//height = 32;
+				//height = CHUNK_SIZE;
 				for (int i = 0; i < height; i++)
 				{
 					glm::ivec3 positionToPlace = glm::ivec3(x, i, z);
@@ -113,7 +113,7 @@ void generateChunk(GameState *state, glm::ivec2 position)
 					else if (i == 0)
 						placeBlock(Bedrock, positionToPlace, chunk);
 					else
-						placeBlock(StoneBrick, positionToPlace, chunk);
+						placeBlock(Stone, positionToPlace, chunk);
 
 				}
 			}
@@ -146,6 +146,7 @@ int main(int argc, char* argv[])
 
 	SDL_Window *window = SDL_CreateWindow("BlockWorld", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 	SDL_SetRelativeMouseMode(SDL_TRUE);
+	SDL_GL_SetSwapInterval(0);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
@@ -167,7 +168,6 @@ int main(int argc, char* argv[])
 	GameState state = {};
 	initGame(&state, texturedShader);
 
-
 	bool firstrun = true;
 
 
@@ -183,7 +183,7 @@ int main(int argc, char* argv[])
 		glm::vec3 playerPos = state.player.position;
 		glm::ivec3 playerBlockPos = glm::ivec3(roundFloatToInt(playerPos.x), roundFloatToInt(playerPos.y), roundFloatToInt(playerPos.z));
 		Chunk *playerChunk = findChunkAtWorldPos(&state, playerBlockPos);
-
+		glm::ivec2 playerChunkPos = playerToChunkPos(playerBlockPos);
 
 		SDL_Event windowEvent;
 		while (SDL_PollEvent(&windowEvent))
@@ -224,35 +224,36 @@ int main(int argc, char* argv[])
 					}
 					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_1)
 					{
-						placeBlock(Grass, playerBlockPos, playerChunk);
+						if (checkChunkExists(playerBlockPos, &state))
+						{
+							playerPlaceBlock(Grass, playerBlockPos, playerChunk);
+						}
 					}
 					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_2)
 					{
-					//	if (!checkChunkExists(glm::ivec2(playerBlockPos.x, playerBlockPos.z), &state))
+						if (checkChunkExists(playerBlockPos, &state))
 						{
-							initChunk(glm::ivec2(playerBlockPos.x, playerBlockPos.z), &state);
+							playerPlaceBlock(Dirt, playerBlockPos, playerChunk);
 						}
-						placeBlock(Dirt, playerBlockPos, playerChunk);
 					}
 					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_3)
 					{
-					//	if (checkChunkExists(glm::ivec2(playerBlockPos.x, playerBlockPos.z), &state))
+						if (checkChunkExists(playerBlockPos, &state))
 						{
-							initChunk(glm::ivec2(playerBlockPos.x, playerBlockPos.z), &state);
+							playerPlaceBlock(Stone, playerBlockPos, playerChunk);
 						}
-						placeBlock(StoneBrick, playerBlockPos, playerChunk);
 					}
 					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_4)
 					{
-					//	if (checkChunkExists(glm::ivec2(playerBlockPos.x, playerBlockPos.z), &state))
+						if (checkChunkExists(playerBlockPos, &state))
 						{
-							initChunk(glm::ivec2(playerBlockPos.x, playerBlockPos.z), &state);
+							playerPlaceBlock(Bedrock, playerBlockPos, playerChunk);
 						}
-						placeBlock(Bedrock, playerBlockPos, playerChunk);
 					}
 					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_RETURN)
 					{
 						state.chunks.clear();
+						state.activeChunkPositions.clear();
 					}
 				}break;
 			}
@@ -313,10 +314,9 @@ int main(int argc, char* argv[])
 		int chunkCounter = 0;
 		for (std::unordered_map<int, Chunk>::iterator iter = state.chunks.begin(); iter != state.chunks.end(); ++iter)
 		{
-			drawChunk((Chunk*)&iter->second, &state.bDatabase, texturedShader);
+			drawChunk((Chunk*)&iter->second,&state, texturedShader);
 			blockCounter += (int)iter->second.blocks.size();
 		}
-
 
 
 		SDL_GL_SwapWindow(window);

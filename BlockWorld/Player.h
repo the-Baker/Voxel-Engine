@@ -30,7 +30,7 @@ struct Player
 
 void initPlayer(Player *player)
 {
-	player->position = glm::vec3(16.0f, 32.0f, 16.0f);
+	player->position = glm::vec3(8.0f, 43.0f, 8.0f);
 	glm::vec3 front;
 	front.x = cos(glm::radians(player->yaw)) * cos(glm::radians(player->pitch));
 	front.y = sin(glm::radians(player->pitch));

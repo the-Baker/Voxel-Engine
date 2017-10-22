@@ -29,7 +29,7 @@ unsigned int loadTexture(char const *filename)
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 		stbi_image_free(data);
@@ -67,6 +67,16 @@ void drawModel(RawModel model)
 	glBindVertexArray(0);
 }
 
+void drawModel(RawModel model, unsigned int textureID)
+{
+	glBindVertexArray(model.vaoID);
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, textureID);
+	glDrawArrays(GL_TRIANGLES, 0, model.vertexCount);
+	glBindVertexArray(0);
+}
 void drawTexturedModel(TexturedModel model)
 {
 	glBindVertexArray(model.model.vaoID);

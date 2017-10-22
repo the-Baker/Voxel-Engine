@@ -24,6 +24,7 @@ struct GameState
 	std::unordered_map<int, Chunk> chunks;
 	std::vector<glm::ivec2> activeChunkPositions;
 	BlockDatabase bDatabase;
+	unsigned int atlas = loadTexture("MinecraftTextureAtlas.png");
 };
 
 
@@ -32,4 +33,5 @@ struct DebugState
 	bool isWireFrame = false;
 	int nBlocks = 0;
 	int nChunks = 0;
+	int nVertices = 0;
 };
