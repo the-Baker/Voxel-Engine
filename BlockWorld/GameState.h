@@ -21,8 +21,7 @@ struct GameState
 	float deltaTime = 0.0f;
 	float lastTime = 0.0f;
 	float currentTime = 0.0f;
-	std::unordered_map<int, Chunk> chunks;
-	std::vector<glm::ivec2> activeChunkPositions;
+	std::unordered_map<long long int, Chunk> chunks;
 	BlockDatabase bDatabase;
 	unsigned int atlas = loadTexture("MinecraftTextureAtlas.png");
 };

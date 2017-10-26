@@ -13,7 +13,7 @@
 
 #define CHUNK_SIZE 32
 
-#define WORLD_SIZE  8
+#define WORLD_SIZE  4
 
 
 
@@ -34,7 +34,6 @@ struct ChunkMesh
 struct Chunk
 {
 	std::unordered_map<uint32_t, Block> blocks;
-	std::vector<glm::ivec3> blockPositions;
 	glm::ivec2 position;
 	ChunkMesh mesh;
 };
@@ -46,7 +45,6 @@ void placeBlock(BlockID id, glm::ivec3 pos, Chunk *chunk)
 	if (chunk->blocks.count(hashKey) == 0)
 	{
 		chunk->blocks.insert(std::make_pair(hashKey, Block{ (uint8_t)id }));
-		chunk->blockPositions.push_back(glm::ivec3(pos));
 		debugState.nBlocks++;
 	}
 }
@@ -66,11 +64,10 @@ void initChunk(glm::ivec2 position, GameState *state)
 {
 	Chunk chunk = {};
 	chunk.position = position;
-	
-	if (!(std::find(state->activeChunkPositions.begin(), state->activeChunkPositions.end(), roundToMultiple(position, CHUNK_SIZE)) != state->activeChunkPositions.end()))
+	long long hashKey = vec2ToInt64(position);
+	if (state->chunks.count(hashKey) == 0)
 	{
-		state->chunks.insert(std::make_pair(TwoToOneD(roundToMultiple(position, CHUNK_SIZE), CHUNK_SIZE), chunk));
-		state->activeChunkPositions.push_back(roundToMultiple(position, CHUNK_SIZE));
+		state->chunks.insert(std::make_pair(vec2ToInt64(position), chunk));
 		debugState.nChunks++;
 		std::cout << "CHUNK INITED AT POSITION: " << chunk.position.x << " " << chunk.position.y << " " << debugState.nChunks << std::endl;
 	}
@@ -84,9 +81,10 @@ glm::ivec2 playerToChunkPos(glm::ivec3 playerBlockPos)
 
 void generateChunkMesh(Chunk* chunk)
 {
-	for (int i = 0; i < chunk->blockPositions.size(); i++)
+	for (std::unordered_map<uint32_t, Block>::iterator iter = chunk->blocks.begin(); iter != chunk->blocks.end(); ++iter)
 	{
-		glm::ivec3 position = chunk->blockPositions[i];
+
+		glm::ivec3 position = intToVec3(iter->first);
 		
 		auto blockIter = chunk->blocks.find(vec3ToInt(position));
 		if (blockIter != chunk->blocks.end())
@@ -286,7 +284,6 @@ void playerPlaceBlock(BlockID id, glm::ivec3 pos, Chunk *chunk)
 	if (chunk->blocks.count(hashKey) == 0)
 	{
 		chunk->blocks[hashKey] = Block{ (uint8_t)id };
-		chunk->blockPositions.push_back(glm::ivec3(pos));
 		debugState.nBlocks++;
 		generateChunkMesh(chunk);
 	}

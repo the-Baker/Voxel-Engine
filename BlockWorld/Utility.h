@@ -61,3 +61,19 @@ glm::ivec3 intToVec3(int integer)
 	result.z = (integer >> 8)  & (0x000000ff);
 	return result;
 }
+
+long long int vec2ToInt64(glm::ivec2 vector)
+{
+	long long int result = 0;
+	result = (long long int)vector.x << 32;
+	result = result | (long long int)vector.y;
+	return result;
+}
+
+glm::ivec2 int64ToVec2(long long int integer)
+{
+	glm::ivec2 result;
+	result.x = integer >> 32;
+	result.y = integer & 0x00000000ffffffff;
+	return result;
+}

@@ -34,15 +34,16 @@ Chunk* findChunkAtWorldPos(GameState *gamestate, glm::ivec3 position)
 	glm::ivec2 chunkPos;
 	chunkPos.x = (position.x / CHUNK_SIZE);
 	chunkPos.y = (position.z / CHUNK_SIZE);
-	if (std::find(gamestate->activeChunkPositions.begin(), gamestate->activeChunkPositions.end(), chunkPos) != gamestate->activeChunkPositions.end())
+
+	long long int hashKey = vec2ToInt64(chunkPos);
+	if (gamestate->chunks.count(hashKey) == 1)
 	{
-		return &gamestate->chunks.at(TwoToOneD(chunkPos, CHUNK_SIZE));
+		return &gamestate->chunks.at(hashKey);
 	}
 	else
 	{
-		return NULL;
+		return nullptr;
 	}
-		
 }
 
 glm::ivec3 worldToChunkPosition(glm::ivec3 worldPos, glm::ivec2 chunkPos)
@@ -56,7 +57,7 @@ glm::ivec3 worldToChunkPosition(glm::ivec3 worldPos, glm::ivec2 chunkPos)
 
 bool checkChunkExists(glm::ivec2 position, GameState *state)
 {
-	return (std::find(state->activeChunkPositions.begin(), state->activeChunkPositions.end(), glm::ivec2(position.x / CHUNK_SIZE, position.y / CHUNK_SIZE)) != state->activeChunkPositions.end());
+	return (state->chunks.count(vec2ToInt64(position)) > 0);
 }
 
 
@@ -64,7 +65,7 @@ void generateChunk(GameState *state, glm::ivec2 position)
 {
 	initChunk(position, state);
 	glm::ivec3 chunkBottomLeft(position.x, 0, position.y);
-	Chunk *chunk = &state->chunks.at(TwoToOneD(position, CHUNK_SIZE));
+	Chunk *chunk = &state->chunks.at(vec2ToInt64(position));
 	for (int z = 0; z < CHUNK_SIZE; z++)
 	{
 		for (int y = 0; y < 1; y++)
@@ -171,6 +172,7 @@ int main(int argc, char* argv[])
 		glm::ivec3 playerIntPosInChunk = worldToChunkPosition(playerIntPos, playerChunkPos);
 
 
+
 		SDL_Event windowEvent;
 		while (SDL_PollEvent(&windowEvent))
 		{
@@ -243,7 +245,6 @@ int main(int argc, char* argv[])
 					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_RETURN)
 					{
 						state.chunks.clear();
-						state.activeChunkPositions.clear();
 					}
 				
 				}break;
@@ -307,7 +308,7 @@ int main(int argc, char* argv[])
 
 		int blockCounter = 0;
 		int chunkCounter = 0;
-		for (std::unordered_map<int, Chunk>::iterator iter = state.chunks.begin(); iter != state.chunks.end(); ++iter)
+		for (std::unordered_map<long long int, Chunk>::iterator iter = state.chunks.begin(); iter != state.chunks.end(); ++iter)
 		{
 			drawChunk((Chunk*)&iter->second,&state, texturedShader);
 			blockCounter += (int)iter->second.blocks.size();
