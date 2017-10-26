@@ -1,14 +1,10 @@
 #include <SDL.h>
-#include <SDL_thread.h>
-#include <SDL_mutex.h>
 #include <GL\glew.h>
 #include <iostream>
-#include <fstream>
-#include <vector>
 #include <unordered_map>
 #include <stdio.h>
 #include <thread>
-#include <assimp\Importer.hpp>
+#include <string>
 
 #include <glm\glm.hpp>
 #include <glm\gtc\matrix_transform.hpp>
@@ -16,7 +12,6 @@
 
 #include "Utility.h"
 #include "simplexnoise.h"
-#include "simplextextures.h"
 
 #include "Player.h"
 #include "Model.h"
@@ -25,7 +20,6 @@
 #include "GameState.h"
 #include "shader.h"
 #include "camera.h"
-#include "noise.h"
 
 
 
@@ -57,7 +51,8 @@ glm::ivec3 worldToChunkPosition(glm::ivec3 worldPos, glm::ivec2 chunkPos)
 
 bool checkChunkExists(glm::ivec2 position, GameState *state)
 {
-	return (state->chunks.count(vec2ToInt64(position)) > 0);
+	int count = state->chunks.count(vec2ToInt64(position));
+	return (count > 0);
 }
 
 
@@ -212,28 +207,28 @@ int main(int argc, char* argv[])
 					}
 					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_1)
 					{
-						if (checkChunkExists(playerIntPos, &state))
+						if (checkChunkExists(playerChunkPos, &state))
 						{
 							playerPlaceBlock(Grass, playerIntPosInChunk, playerChunk);
 						}
 					}
 					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_2)
 					{
-						if (checkChunkExists(playerIntPos, &state))
+						if (checkChunkExists(playerChunkPos, &state))
 						{
 							playerPlaceBlock(Dirt, playerIntPosInChunk, playerChunk);
 						}
 					}
 					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_3)
 					{
-						if (checkChunkExists(playerIntPos, &state))
+						if (checkChunkExists(playerChunkPos, &state))
 						{
 							playerPlaceBlock(Stone, playerIntPosInChunk, playerChunk);
 						}
 					}
 					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_4)
 					{
-						if (checkChunkExists(playerIntPos, &state))
+						if (checkChunkExists(playerChunkPos, &state))
 						{
 							playerPlaceBlock(Bedrock, playerIntPosInChunk, playerChunk);
 						}
