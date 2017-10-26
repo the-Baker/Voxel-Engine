@@ -15,6 +15,8 @@
 #include <glm\gtc\type_ptr.hpp>
 
 #include "Utility.h"
+#include "simplexnoise.h"
+#include "simplextextures.h"
 
 #include "Player.h"
 #include "Model.h"
@@ -43,63 +45,33 @@ Chunk* findChunkAtWorldPos(GameState *gamestate, glm::ivec3 position)
 		
 }
 
+glm::ivec3 worldToChunkPosition(glm::ivec3 worldPos, glm::ivec2 chunkPos)
+{
+	glm::ivec3 result;
+	result.x = worldPos.x - (chunkPos.x * CHUNK_SIZE);
+	result.y = worldPos.y;
+	result.z = worldPos.z - (chunkPos.y * CHUNK_SIZE);
+	return result;
+}
+
 bool checkChunkExists(glm::ivec2 position, GameState *state)
 {
 	return (std::find(state->activeChunkPositions.begin(), state->activeChunkPositions.end(), glm::ivec2(position.x / CHUNK_SIZE, position.y / CHUNK_SIZE)) != state->activeChunkPositions.end());
 }
 
-int generateWorldAroundPosition(void *state, glm::ivec3 pos, int size)
-{
-	GameState *gamestate = (GameState*)state;
-
-	if (gamestate->shouldGenerate)
-	{
-		for (int z = pos.z; z < pos.z + size; z++)
-		{
-			for (int y = 0; y < 1; y++)
-			{
-				for (int x = pos.x; x < pos.x + size; x++)
-				{
-					int height = (int)(noise((float)x / 5.0f, (float)z / 7.0f) * 3.0 + 16);
-					//height = CHUNK_SIZE;
-					for (int i = 0; i <= height; i++)
-					{
-						glm::ivec3 positionToPlace = glm::ivec3(x, i, z);
-						initChunk(positionToPlace, gamestate);
-						Chunk *chunk = &gamestate->chunks.at(TwoToOneD(positionToPlace, CHUNK_SIZE));
-
-						///*
-						if (i > height - 1)
-							placeBlock(Grass, positionToPlace, chunk);
-						else if (i > height - 6)
-							placeBlock(Dirt, positionToPlace, chunk);
-						else if (i == 0)
-							placeBlock(Bedrock, positionToPlace, chunk);
-						else
-							placeBlock(Stone, positionToPlace, chunk);
-						//*/
-					}
-				}
-			}
-		}
-	}
-
-	return 1;
-}
 
 void generateChunk(GameState *state, glm::ivec2 position)
 {
 	initChunk(position, state);
-	glm::ivec3 chunkBottomLeft(position.x * CHUNK_SIZE, 0, position.y * CHUNK_SIZE);
+	glm::ivec3 chunkBottomLeft(position.x, 0, position.y);
 	Chunk *chunk = &state->chunks.at(TwoToOneD(position, CHUNK_SIZE));
-	for (int z = chunkBottomLeft.z; z < chunkBottomLeft.z + CHUNK_SIZE; z++)
+	for (int z = 0; z < CHUNK_SIZE; z++)
 	{
 		for (int y = 0; y < 1; y++)
 		{
-			for (int x = chunkBottomLeft.x; x < chunkBottomLeft.x + CHUNK_SIZE; x++)
+			for (int x = 0; x < CHUNK_SIZE; x++)
 			{
-				int height = (int)(noise((float)x / 5.0f, (float)z / 7.0f) * 3.0 + 16);
-				//height = CHUNK_SIZE;
+				int height = scaled_octave_noise_2d(5.0f, 7.0f, 0.0005f, 16.0f, 48.0f, (float)(chunkBottomLeft.x * CHUNK_SIZE + x), (float)(chunkBottomLeft.z * CHUNK_SIZE + z));
 				for (int i = 0; i < height; i++)
 				{
 					glm::ivec3 positionToPlace = glm::ivec3(x, i, z);
@@ -121,6 +93,18 @@ void generateChunk(GameState *state, glm::ivec2 position)
 	}
 	generateChunkMesh(chunk);
 }
+
+void generateWorldAroundPosition(GameState *state, glm::ivec2 pos, int size)
+{
+	for (int z = 0; z < size; z++)
+	{
+		for (int x = 0; x < size; x++)
+		{
+			generateChunk(state, glm::ivec2(pos.x + x, pos.y + z));
+		}
+	}
+}
+
 
 void initGame(GameState *state, unsigned int shaderID)
 {
@@ -181,9 +165,11 @@ int main(int argc, char* argv[])
 
 
 		glm::vec3 playerPos = state.player.position;
-		glm::ivec3 playerBlockPos = glm::ivec3(roundFloatToInt(playerPos.x), roundFloatToInt(playerPos.y), roundFloatToInt(playerPos.z));
-		Chunk *playerChunk = findChunkAtWorldPos(&state, playerBlockPos);
-		glm::ivec2 playerChunkPos = playerToChunkPos(playerBlockPos);
+		glm::ivec3 playerIntPos = glm::ivec3((float)playerPos.x, (float)playerPos.y, (float)playerPos.z);
+		Chunk *playerChunk = findChunkAtWorldPos(&state, playerIntPos);
+		glm::ivec2 playerChunkPos = playerToChunkPos(playerIntPos);
+		glm::ivec3 playerIntPosInChunk = worldToChunkPosition(playerIntPos, playerChunkPos);
+
 
 		SDL_Event windowEvent;
 		while (SDL_PollEvent(&windowEvent))
@@ -224,36 +210,48 @@ int main(int argc, char* argv[])
 					}
 					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_1)
 					{
-						if (checkChunkExists(playerBlockPos, &state))
+						if (checkChunkExists(playerIntPos, &state))
 						{
-							playerPlaceBlock(Grass, playerBlockPos, playerChunk);
+							playerPlaceBlock(Grass, playerIntPosInChunk, playerChunk);
 						}
 					}
 					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_2)
 					{
-						if (checkChunkExists(playerBlockPos, &state))
+						if (checkChunkExists(playerIntPos, &state))
 						{
-							playerPlaceBlock(Dirt, playerBlockPos, playerChunk);
+							playerPlaceBlock(Dirt, playerIntPosInChunk, playerChunk);
 						}
 					}
 					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_3)
 					{
-						if (checkChunkExists(playerBlockPos, &state))
+						if (checkChunkExists(playerIntPos, &state))
 						{
-							playerPlaceBlock(Stone, playerBlockPos, playerChunk);
+							playerPlaceBlock(Stone, playerIntPosInChunk, playerChunk);
 						}
 					}
 					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_4)
 					{
-						if (checkChunkExists(playerBlockPos, &state))
+						if (checkChunkExists(playerIntPos, &state))
 						{
-							playerPlaceBlock(Bedrock, playerBlockPos, playerChunk);
+							playerPlaceBlock(Bedrock, playerIntPosInChunk, playerChunk);
 						}
+					}
+					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_5)
+					{
+						generateChunk(&state, playerChunkPos);
 					}
 					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_RETURN)
 					{
 						state.chunks.clear();
 						state.activeChunkPositions.clear();
+					}
+				
+				}break;
+				case SDL_MOUSEBUTTONDOWN:
+				{
+					if (windowEvent.button.button == SDL_BUTTON_LEFT)
+					{
+						generateChunk(&state, playerChunkPos);
 					}
 				}break;
 			}
@@ -283,13 +281,10 @@ int main(int argc, char* argv[])
 
 		if (state.firstRun)
 		{
-			//generateWorldAroundPosition(&state, state.player.position, CHUNK_SIZE);
 			state.shouldGenerate = false;
 			std::cout << "===========================================" << std::endl;
 		}
 
-		if (state.shouldGenerate)
-			generateWorldAroundPosition(&state, playerBlockPos, GENERATE_HALF_SIZE);
 
 
 		SDL_SetWindowTitle(window, std::string("X: " + std::to_string(playerPos.x) + " Y: " + std::to_string(playerPos.y) + " Z: " + std::to_string(playerPos.z) + " Chunks: " + std::to_string(debugState.nChunks) + " Blocks: " + std::to_string(debugState.nBlocks) + " FPS: " + std::to_string(1 / state.deltaTime)).c_str());

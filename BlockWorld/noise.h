@@ -1,5 +1,5 @@
 #pragma once
-
+#include "simplexnoise.h"
 
 inline double findnoise2(double x, double y)
 {
@@ -30,3 +30,4 @@ double noise(double x, double y)
 	double int2 = interpolate1(u, v, x - floorx);//Here we use x-floorx, to get 1st dimension. Don't mind the x-floorx thingie, it's part of the cosine formula	
 	return interpolate1(int1, int2, y - floory);//Here we use y-floory, to get the 2nd dimension.
 }
+

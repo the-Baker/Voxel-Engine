@@ -11,9 +11,9 @@
 
 #define GENERATE_HALF_SIZE 4
 
-#define CHUNK_SIZE 16
+#define CHUNK_SIZE 32
 
-#define WORLD_SIZE  6
+#define WORLD_SIZE  8
 
 
 
@@ -39,7 +39,7 @@ struct Chunk
 	ChunkMesh mesh;
 };
 
-
+//Position within chunk (0 - CHUNK_SIZE)
 void placeBlock(BlockID id, glm::ivec3 pos, Chunk *chunk)
 {
 	int hashKey = vec3ToInt(pos);
@@ -55,8 +55,9 @@ void placeBlock(BlockID id, glm::ivec3 pos, Chunk *chunk)
 
 void drawChunk(Chunk * chunk, GameState *state, unsigned int shader)
 {
+	glm::vec3 chunkToWorld = glm::vec3(chunk->position.x * CHUNK_SIZE, 0.0f, chunk->position.y * CHUNK_SIZE);
 	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(1, 1, 1));
+	model = glm::translate(model, chunkToWorld);
 	setUniformMat4("model", model, shader);
 	drawModel(chunk->mesh.model, state->atlas);
 }
@@ -78,7 +79,7 @@ void initChunk(glm::ivec2 position, GameState *state)
 
 glm::ivec2 playerToChunkPos(glm::ivec3 playerBlockPos)
 {
-	return glm::ivec2(playerBlockPos.x / CHUNK_SIZE, playerBlockPos.y / CHUNK_SIZE);
+	return glm::ivec2(playerBlockPos.x / CHUNK_SIZE, playerBlockPos.z / CHUNK_SIZE);
 }
 
 void generateChunkMesh(Chunk* chunk)
@@ -289,4 +290,5 @@ void playerPlaceBlock(BlockID id, glm::ivec3 pos, Chunk *chunk)
 		debugState.nBlocks++;
 		generateChunkMesh(chunk);
 	}
+	std::cout << "Block Placed At: " << pos.x << " " << pos.y << " " << pos.z << std::endl; 
 }

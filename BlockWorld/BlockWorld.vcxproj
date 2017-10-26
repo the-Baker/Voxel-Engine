@@ -128,6 +128,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="simplexnoise.cpp" />
+    <ClCompile Include="simplextextures.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="CubeInstanceFragmentShader.glsl" />
@@ -147,6 +149,8 @@
     <ClInclude Include="noise.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="shader.h" />
+    <ClInclude Include="simplexnoise.h" />
+    <ClInclude Include="simplextextures.h" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="Utility.h" />
   </ItemGroup>
