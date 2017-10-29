@@ -140,7 +140,7 @@ glm::vec2 findUV(BlockID id, BlockSide side)
 				result.y = 1.0f;
 				return result;
 			}
-			else if (side == Front || Back || Left || Right)
+			else if (side == Front || side == Back || side == Left || side == Right)
 			{
 				result.x = 3.0f / ATLASWIDTH;
 				result.y = 1.0f;

@@ -13,48 +13,72 @@
 #include "Utility.h"
 #include "simplexnoise.h"
 
+
 #include "Player.h"
 #include "Model.h"
 #include "Block.h"
 #include "Chunk.h"
+#include "Ray.h"
 #include "GameState.h"
 #include "shader.h"
 #include "camera.h"
 
 
 
-Chunk* findChunkAtWorldPos(GameState *gamestate, glm::ivec3 position)
-{
-	glm::ivec2 chunkPos;
-	chunkPos.x = (position.x / CHUNK_SIZE);
-	chunkPos.y = (position.z / CHUNK_SIZE);
 
-	long long int hashKey = vec2ToInt64(chunkPos);
-	if (gamestate->chunks.count(hashKey) == 1)
+
+
+void placeTree(glm::ivec3 position, Chunk* chunk)
+{
+	int x = position.x;
+	int y = position.y;
+	int z = position.z;
+
+	for (int i = 1; i <= 6; i++)
 	{
-		return &gamestate->chunks.at(hashKey);
+		placeBlock(Stone, glm::ivec3(x, y + i, z), chunk);
 	}
-	else
+	for (int i = 4; i <= 5; i++)
 	{
-		return nullptr;
+		placeBlock(Bedrock, glm::ivec3(x - 2, y + i, z - 2), chunk);
+		placeBlock(Bedrock, glm::ivec3(x - 1, y + i, z - 2), chunk);
+		placeBlock(Bedrock, glm::ivec3(x    , y + i, z - 2), chunk);
+		placeBlock(Bedrock, glm::ivec3(x + 1, y + i, z - 2), chunk);
+		placeBlock(Bedrock, glm::ivec3(x + 2, y + i, z - 2), chunk);
+
+		placeBlock(Bedrock, glm::ivec3(x - 2, y + i, z - 1), chunk);
+		placeBlock(Bedrock, glm::ivec3(x - 1, y + i, z - 1), chunk);
+		placeBlock(Bedrock, glm::ivec3(x    , y + i, z - 1), chunk);
+		placeBlock(Bedrock, glm::ivec3(x + 1, y + i, z - 1), chunk);
+		placeBlock(Bedrock, glm::ivec3(x + 2, y + i, z - 1), chunk);
+
+		placeBlock(Bedrock, glm::ivec3(x - 2, y + i, z    ), chunk);
+		placeBlock(Bedrock, glm::ivec3(x - 1, y + i, z    ), chunk);
+		placeBlock(Bedrock, glm::ivec3(x + 1, y + i, z    ), chunk);
+		placeBlock(Bedrock, glm::ivec3(x + 2, y + i, z    ), chunk);
+
+		placeBlock(Bedrock, glm::ivec3(x - 2, y + i, z + 1), chunk);
+		placeBlock(Bedrock, glm::ivec3(x - 1, y + i, z + 1), chunk);
+		placeBlock(Bedrock, glm::ivec3(x    , y + i, z + 1), chunk);
+		placeBlock(Bedrock, glm::ivec3(x + 1, y + i, z + 1), chunk);
+		placeBlock(Bedrock, glm::ivec3(x + 2, y + i, z + 1), chunk);
+
+		placeBlock(Bedrock, glm::ivec3(x - 2, y + i, z + 2), chunk);
+		placeBlock(Bedrock, glm::ivec3(x - 1, y + i, z + 2), chunk);
+		placeBlock(Bedrock, glm::ivec3(x    , y + i, z + 2), chunk);
+		placeBlock(Bedrock, glm::ivec3(x + 1, y + i, z + 2), chunk);
+		placeBlock(Bedrock, glm::ivec3(x + 2, y + i, z + 2), chunk);
 	}
+	for (int i = 6; i <= 7; i++)
+	{
+		placeBlock(Bedrock, glm::ivec3(x - 1, y + i, z), chunk);
+		placeBlock(Bedrock, glm::ivec3(x + 1, y + i, z    ), chunk);
+		placeBlock(Bedrock, glm::ivec3(x    , y + i, z - 1), chunk);
+		placeBlock(Bedrock, glm::ivec3(x    , y + i, z + 1), chunk);
+	}
+	placeBlock(Bedrock, glm::ivec3(x, y + 7, z), chunk);
+	generateChunkMesh(chunk);
 }
-
-glm::ivec3 worldToChunkPosition(glm::ivec3 worldPos, glm::ivec2 chunkPos)
-{
-	glm::ivec3 result;
-	result.x = worldPos.x - (chunkPos.x * CHUNK_SIZE);
-	result.y = worldPos.y;
-	result.z = worldPos.z - (chunkPos.y * CHUNK_SIZE);
-	return result;
-}
-
-bool checkChunkExists(glm::ivec2 position, GameState *state)
-{
-	int count = state->chunks.count(vec2ToInt64(position));
-	return (count > 0);
-}
-
 
 void generateChunk(GameState *state, glm::ivec2 position)
 {
@@ -67,7 +91,7 @@ void generateChunk(GameState *state, glm::ivec2 position)
 		{
 			for (int x = 0; x < CHUNK_SIZE; x++)
 			{
-				int height = scaled_octave_noise_2d(5.0f, 7.0f, 0.0005f, 16.0f, 48.0f, (float)(chunkBottomLeft.x * CHUNK_SIZE + x), (float)(chunkBottomLeft.z * CHUNK_SIZE + z));
+				int height = (int)scaled_octave_noise_2d(5.0f, 7.0f, 0.0007f, 16.0f, 48.0f, (float)(chunkBottomLeft.x * CHUNK_SIZE + x), (float)(chunkBottomLeft.z * CHUNK_SIZE + z));
 				for (int i = 0; i < height; i++)
 				{
 					glm::ivec3 positionToPlace = glm::ivec3(x, i, z);
@@ -106,7 +130,8 @@ void initGame(GameState *state, unsigned int shaderID)
 {
 	state->mode = WORLD;
 	initPlayer(&state->player);
-	loadBlockData(&state->bDatabase, shaderID);
+	//loadBlockData(&state->bDatabase, shaderID);
+
 	for (int z = 0; z < WORLD_SIZE; z++)
 	{
 		for (int x = 0; x < WORLD_SIZE; x++)
@@ -135,8 +160,7 @@ int main(int argc, char* argv[])
 
 	glewInit();
 	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE);
-
+	//glEnable(GL_CULL_FACE);
 
 
 	GLuint texturedShader = createShader("TexturedVertexShader.glsl", "TexturedFragmentShader.glsl");
@@ -151,7 +175,6 @@ int main(int argc, char* argv[])
 	bool firstrun = true;
 
 
-
 	while (state.gameShouldRun)
 	{
 		state.currentTime = SDL_GetTicks() / 1000.0f;
@@ -160,12 +183,10 @@ int main(int argc, char* argv[])
 
 
 
-		glm::vec3 playerPos = state.player.position;
-		glm::ivec3 playerIntPos = glm::ivec3((float)playerPos.x, (float)playerPos.y, (float)playerPos.z);
+		glm::ivec3 playerIntPos = glm::trunc(state.player.position);
 		Chunk *playerChunk = findChunkAtWorldPos(&state, playerIntPos);
-		glm::ivec2 playerChunkPos = playerToChunkPos(playerIntPos);
+		glm::ivec2 playerChunkPos = posOfChunkAtWorldPos(playerIntPos);
 		glm::ivec3 playerIntPosInChunk = worldToChunkPosition(playerIntPos, playerChunkPos);
-
 
 
 		SDL_Event windowEvent;
@@ -201,41 +222,37 @@ int main(int argc, char* argv[])
 						state.shouldGenerate = false;
 						std::cout << state.shouldGenerate << std::endl;
 					}
+					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_LCTRL)
+					{
+						state.goFast = !state.goFast;
+					}
 					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_T)
 					{
 						debugState.isWireFrame = !debugState.isWireFrame;
 					}
 					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_1)
 					{
-						if (checkChunkExists(playerChunkPos, &state))
-						{
-							playerPlaceBlock(Grass, playerIntPosInChunk, playerChunk);
-						}
+						state.blockTypeToPlace = Grass;
 					}
 					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_2)
 					{
-						if (checkChunkExists(playerChunkPos, &state))
-						{
-							playerPlaceBlock(Dirt, playerIntPosInChunk, playerChunk);
-						}
+						state.blockTypeToPlace = Dirt;
 					}
 					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_3)
 					{
-						if (checkChunkExists(playerChunkPos, &state))
-						{
-							playerPlaceBlock(Stone, playerIntPosInChunk, playerChunk);
-						}
+						state.blockTypeToPlace = Stone;
 					}
 					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_4)
 					{
-						if (checkChunkExists(playerChunkPos, &state))
-						{
-							playerPlaceBlock(Bedrock, playerIntPosInChunk, playerChunk);
-						}
+						state.blockTypeToPlace = Bedrock;
 					}
 					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_5)
 					{
 						generateChunk(&state, playerChunkPos);
+					}
+					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_6)
+					{
+
 					}
 					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_RETURN)
 					{
@@ -247,7 +264,17 @@ int main(int argc, char* argv[])
 				{
 					if (windowEvent.button.button == SDL_BUTTON_LEFT)
 					{
-						generateChunk(&state, playerChunkPos);
+						state.focusedBlockPos = findFirstBlock(0.001f, &state.playerRay, &state);
+						Chunk *chunkWithBlockToRemove = findChunkAtWorldPos(&state, state.focusedBlockPos);
+						removeBlock(glm::trunc(state.focusedBlockPos), chunkWithBlockToRemove);
+						std::cout << state.focusedBlockPos.x << " " << state.focusedBlockPos.y << " " << state.focusedBlockPos.z << std::endl;
+					}
+					if (windowEvent.button.button == SDL_BUTTON_RIGHT)
+					{
+						state.focusedBlockPos = findLastSpace(0.001f, &state.playerRay, &state);
+						Chunk *chunkWithBlockToPlace = findChunkAtWorldPos(&state, state.focusedBlockPos);
+						playerPlaceBlock(state.blockTypeToPlace, glm::trunc(state.focusedBlockPos), chunkWithBlockToPlace);
+						std::cout << state.focusedBlockPos.x << " " << state.focusedBlockPos.y << " " << state.focusedBlockPos.z << std::endl;
 					}
 				}break;
 			}
@@ -273,6 +300,9 @@ int main(int argc, char* argv[])
 			movePlayer(&state.player, DOWN, state.deltaTime);
 
 		updatePlayer(&state.player);
+
+		getRayDirection(state.player.camera, glm::vec2(windowWidth / 2.0f, windowHeight / 2.0f), glm::vec2(windowWidth, windowHeight));
+		initRay(&state.playerRay, state.player.position, state.player.camera.front);
 #endif // 0
 
 		if (state.firstRun)
@@ -282,17 +312,23 @@ int main(int argc, char* argv[])
 		}
 
 
-
-		SDL_SetWindowTitle(window, std::string("X: " + std::to_string(playerPos.x) + " Y: " + std::to_string(playerPos.y) + " Z: " + std::to_string(playerPos.z) + " Chunks: " + std::to_string(debugState.nChunks) + " Blocks: " + std::to_string(debugState.nBlocks) + " FPS: " + std::to_string(1 / state.deltaTime)).c_str());
+		SDL_SetWindowTitle(window, std::string("X: " + std::to_string(state.player.position.x) + " Y: " + std::to_string(state.player.position.y) + " Z: " + std::to_string(state.player.position.z) + " Chunks: " + std::to_string(debugState.nChunks) + " Blocks: " + std::to_string(debugState.nBlocks) + " FPS: " + std::to_string(1 / state.deltaTime)).c_str());
 
 		glViewport(0, 0, windowWidth, windowHeight);
 		glClearColor(9.0f / 255.0f, 64.0f / 255.0f, 255.0f / 255.0f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 		if (debugState.isWireFrame)
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		else
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+		if (state.goFast)
+			state.player.moveSpeed = 50.0f;
+		else
+			state.player.moveSpeed = 10.0f;
+
+
 
 
 		glUseProgram(texturedShader);
@@ -301,6 +337,7 @@ int main(int argc, char* argv[])
 		setUniformMat4("projection", projection, texturedShader);
 		setUniformMat4("view", view, texturedShader);
 
+
 		int blockCounter = 0;
 		int chunkCounter = 0;
 		for (std::unordered_map<long long int, Chunk>::iterator iter = state.chunks.begin(); iter != state.chunks.end(); ++iter)
@@ -308,6 +345,41 @@ int main(int argc, char* argv[])
 			drawChunk((Chunk*)&iter->second,&state, texturedShader);
 			blockCounter += (int)iter->second.blocks.size();
 		}
+
+		{
+		glClear(GL_DEPTH_BUFFER_BIT);
+
+		glDepthMask(GL_FALSE);
+		glDisable(GL_DEPTH_TEST);
+
+		glUseProgram(0);
+
+		float vertices[] = {
+			-0.01f, -0.01f, 0.0f,
+			 0.01f, -0.01f, 0.0f,
+			 0.00f,  0.01f, 0.0f
+		};
+
+		RawModel ui;
+		ui = loadToVAO(vertices, ARRAY_COUNT(vertices), vertices, 3);
+
+		projection = glm::ortho(0.0, (double)windowWidth, (double)windowHeight, 0.0, -1.0, 1.0);
+		view = glm::mat4(1.0f);
+		setUniformMat4("projection", projection, texturedShader);
+		setUniformMat4("view", view, texturedShader);
+
+		drawModel(ui);
+
+		glMatrixMode(GL_PROJECTION);
+		glPopMatrix();
+		glMatrixMode(GL_MODELVIEW);
+		glPopMatrix();
+
+		glDepthMask(GL_TRUE);
+		glEnable(GL_DEPTH_TEST);
+		}
+
+		
 
 
 		SDL_GL_SwapWindow(window);

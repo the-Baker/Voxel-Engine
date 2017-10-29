@@ -148,6 +148,7 @@
     <ClInclude Include="Model.h" />
     <ClInclude Include="noise.h" />
     <ClInclude Include="Player.h" />
+    <ClInclude Include="Ray.h" />
     <ClInclude Include="shader.h" />
     <ClInclude Include="simplexnoise.h" />
     <ClInclude Include="simplextextures.h" />

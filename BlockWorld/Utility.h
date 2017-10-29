@@ -77,3 +77,12 @@ glm::ivec2 int64ToVec2(long long int integer)
 	result.y = integer & 0x00000000ffffffff;
 	return result;
 }
+
+glm::vec2 screenToNormalizedCoordinates(glm::vec2 screenCoords, glm::vec2 screenDimensions)
+{
+	glm::vec2 result;
+	result.x = (2.0f * screenCoords.x) / screenDimensions.x - 1.0f;
+	result.y = (2.0f * screenCoords.y) / screenDimensions.y - 1.0f;
+
+	return result;
+}
