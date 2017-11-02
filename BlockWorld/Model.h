@@ -126,3 +126,13 @@ RawModel loadToVAO(float *vertices, unsigned int vertexCount, float *uvs, unsign
 	return RawModel({ vao, vertexCount });
 }
 
+RawModel loadToVAO(float *vertices, unsigned int vertexCount)
+{
+	unsigned int vao;
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+	storeDataInAttributeList(vertices, vertexCount, 0, 3);
+
+	glBindVertexArray(0);
+	return RawModel({ vao, vertexCount });
+}

@@ -27,11 +27,11 @@ void initRay(Ray *ray, glm::vec3 origin, glm::vec3 direction)
 	ray->direction = glm::normalize(direction);
 }
 
-glm::vec3 findFirstBlock(float stepSize, Ray *ray, GameState *state)
+glm::vec3 findFirstBlock(float stepSize, float distance, Ray *ray, GameState *state)
 {
 	glm::vec3 incrementer;
 	incrementer = ray->direction * stepSize;
-	for (float i = 0.0f; i < state->player.pickDistance; i += stepSize)
+	for (float i = 0.0f; i < distance; i += stepSize)
 	{
 		ray->end += incrementer;
 		glm::vec2 chunkPos = posOfChunkAtWorldPos(ray->end);
@@ -49,11 +49,11 @@ glm::vec3 findFirstBlock(float stepSize, Ray *ray, GameState *state)
 	return glm::ivec3(0, 0, 0);
 }
 
-glm::vec3 findLastSpace(float stepSize, Ray *ray, GameState *state)
+glm::vec3 findLastSpace(float stepSize, float distance, Ray *ray, GameState *state)
 {
 	glm::vec3 incrementer;
 	incrementer = ray->direction * stepSize;
-	for (float i = 0.0f; i < state->player.pickDistance; i += stepSize)
+	for (float i = 0.0f; i < distance; i += stepSize)
 	{
 		ray->end += incrementer;
 		glm::vec2 chunkPos = posOfChunkAtWorldPos(ray->end);
@@ -65,7 +65,7 @@ glm::vec3 findLastSpace(float stepSize, Ray *ray, GameState *state)
 		Chunk *chunk = &state->chunks.at(chunkKey);
 		if (chunk->blocks.count(blockKey) == 1)
 		{
-			return ray->end - incrementer;
+			return ray->end - (2.0f * incrementer);
 		}
 	}
 	return glm::ivec3(0, 0, 0);

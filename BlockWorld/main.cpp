@@ -92,6 +92,8 @@ void generateChunk(GameState *state, glm::ivec2 position)
 			for (int x = 0; x < CHUNK_SIZE; x++)
 			{
 				int height = (int)scaled_octave_noise_2d(5.0f, 7.0f, 0.0007f, 16.0f, 48.0f, (float)(chunkBottomLeft.x * CHUNK_SIZE + x), (float)(chunkBottomLeft.z * CHUNK_SIZE + z));
+				//float shouldPlace = scaled_octave_noise_3d(4.0f, 2.0f, 0.007f, -1.0f, 1.0f, (float)(chunkBottomLeft.x * CHUNK_SIZE + x),(float)(chunkBottomLeft.y + y), (float)(chunkBottomLeft.z * CHUNK_SIZE + z));
+
 				for (int i = 0; i < height; i++)
 				{
 					glm::ivec3 positionToPlace = glm::ivec3(x, i, z);
@@ -116,21 +118,25 @@ void generateChunk(GameState *state, glm::ivec2 position)
 
 void generateWorldAroundPosition(GameState *state, glm::ivec2 pos, int size)
 {
-	for (int z = 0; z < size; z++)
+	for (int z = -size; z < size; z++)
 	{
-		for (int x = 0; x < size; x++)
+		for (int x = -size; x < size; x++)
 		{
-			generateChunk(state, glm::ivec2(pos.x + x, pos.y + z));
+			glm::ivec2 posToGen = { pos.x + x, pos.y + z };
+			if (!checkChunkExists(posToGen, state));
+				generateChunk(state, posToGen);
 		}
 	}
 }
 
 
-void initGame(GameState *state, unsigned int shaderID)
+void initGame(GameState *state)
 {
 	state->mode = WORLD;
 	initPlayer(&state->player);
-	//loadBlockData(&state->bDatabase, shaderID);
+	RawModel cubeModel;
+	cubeModel = loadToVAO(cubeVertices, ARRAY_COUNT(cubeVertices), cubeVertices, ARRAY_COUNT(cubeVertices));
+	state->cubeModel = cubeModel;
 
 	for (int z = 0; z < WORLD_SIZE; z++)
 	{
@@ -160,17 +166,19 @@ int main(int argc, char* argv[])
 
 	glewInit();
 	glEnable(GL_DEPTH_TEST);
-	//glEnable(GL_CULL_FACE);
+	glEnable(GL_CULL_FACE);
 
+	
 
 	GLuint texturedShader = createShader("TexturedVertexShader.glsl", "TexturedFragmentShader.glsl");
+	GLuint blackShader = createShader("BlackVertexShader.glsl", "BlackFragmentShader.glsl");
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 	
 
 	GameState state = {};
-	initGame(&state, texturedShader);
+	initGame(&state);
 
 	bool firstrun = true;
 
@@ -187,6 +195,7 @@ int main(int argc, char* argv[])
 		Chunk *playerChunk = findChunkAtWorldPos(&state, playerIntPos);
 		glm::ivec2 playerChunkPos = posOfChunkAtWorldPos(playerIntPos);
 		glm::ivec3 playerIntPosInChunk = worldToChunkPosition(playerIntPos, playerChunkPos);
+		state.focusedBlockPos = glm::trunc(findFirstBlock(0.001f, state.player.pickDistance, &state.playerRay, &state));
 
 
 		SDL_Event windowEvent;
@@ -248,11 +257,11 @@ int main(int argc, char* argv[])
 					}
 					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_5)
 					{
-						generateChunk(&state, playerChunkPos);
+						state.blockTypeToPlace = WoodPlank;
 					}
 					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_6)
 					{
-
+						generateChunk(&state, playerChunkPos);
 					}
 					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_RETURN)
 					{
@@ -264,17 +273,16 @@ int main(int argc, char* argv[])
 				{
 					if (windowEvent.button.button == SDL_BUTTON_LEFT)
 					{
-						state.focusedBlockPos = findFirstBlock(0.001f, &state.playerRay, &state);
 						Chunk *chunkWithBlockToRemove = findChunkAtWorldPos(&state, state.focusedBlockPos);
 						removeBlock(glm::trunc(state.focusedBlockPos), chunkWithBlockToRemove);
 						std::cout << state.focusedBlockPos.x << " " << state.focusedBlockPos.y << " " << state.focusedBlockPos.z << std::endl;
 					}
 					if (windowEvent.button.button == SDL_BUTTON_RIGHT)
 					{
-						state.focusedBlockPos = findLastSpace(0.001f, &state.playerRay, &state);
-						Chunk *chunkWithBlockToPlace = findChunkAtWorldPos(&state, state.focusedBlockPos);
-						playerPlaceBlock(state.blockTypeToPlace, glm::trunc(state.focusedBlockPos), chunkWithBlockToPlace);
-						std::cout << state.focusedBlockPos.x << " " << state.focusedBlockPos.y << " " << state.focusedBlockPos.z << std::endl;
+						state.focusedFacePos = findLastSpace(0.001f,state.player.pickDistance, &state.playerRay, &state);
+						Chunk *chunkWithBlockToPlace = findChunkAtWorldPos(&state, state.focusedFacePos);
+						playerPlaceBlock(state.blockTypeToPlace, glm::ivec3(state.focusedFacePos.x, state.focusedFacePos.y, state.focusedFacePos.z), chunkWithBlockToPlace);
+						std::cout << state.focusedFacePos.x << " " << state.focusedFacePos.y << " " << state.focusedFacePos.z << std::endl;
 					}
 				}break;
 			}
@@ -301,8 +309,9 @@ int main(int argc, char* argv[])
 
 		updatePlayer(&state.player);
 
+
 		getRayDirection(state.player.camera, glm::vec2(windowWidth / 2.0f, windowHeight / 2.0f), glm::vec2(windowWidth, windowHeight));
-		initRay(&state.playerRay, state.player.position, state.player.camera.front);
+		initRay(&state.playerRay, state.player.camera.position, state.player.camera.front);
 #endif // 0
 
 		if (state.firstRun)
@@ -346,7 +355,24 @@ int main(int argc, char* argv[])
 			blockCounter += (int)iter->second.blocks.size();
 		}
 
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+		glUseProgram(blackShader);
+		projection = glm::perspective(glm::radians(state.player.camera.fov), (float)windowWidth / (float)windowHeight, 0.1f, state.player.camera.viewDistance);
+		view = GetCameraViewMatrix(state.player.camera);
+		setUniformMat4("projection", projection, blackShader);
+		setUniformMat4("view", view, blackShader);
+		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(state.focusedBlockPos));
+		model = glm::scale(model, glm::vec3(1.003f, 1.003f, 1.003f));
+		setUniformMat4("model", model, blackShader);
+		drawModel(state.cubeModel);
+
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
 		{
+
+		
 		glClear(GL_DEPTH_BUFFER_BIT);
 
 		glDepthMask(GL_FALSE);
@@ -355,8 +381,8 @@ int main(int argc, char* argv[])
 		glUseProgram(0);
 
 		float vertices[] = {
-			-0.01f, -0.01f, 0.0f,
-			 0.01f, -0.01f, 0.0f,
+			-0.005f, -0.01f, 0.0f,
+			 0.005f, -0.01f, 0.0f,
 			 0.00f,  0.01f, 0.0f
 		};
 
@@ -365,8 +391,8 @@ int main(int argc, char* argv[])
 
 		projection = glm::ortho(0.0, (double)windowWidth, (double)windowHeight, 0.0, -1.0, 1.0);
 		view = glm::mat4(1.0f);
-		setUniformMat4("projection", projection, texturedShader);
-		setUniformMat4("view", view, texturedShader);
+		setUniformMat4("projection", projection, blackShader);
+		setUniformMat4("view", view, blackShader);
 
 		drawModel(ui);
 

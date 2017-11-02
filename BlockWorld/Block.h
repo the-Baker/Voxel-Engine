@@ -17,58 +17,174 @@
 #define ATLASTILEHEIGHT (1.0f / (float)ATLASHEIGHT)
 
 
-float vertices[] =
+float cubeVertices[] = 
 {
-	-.5,-.5,-.5,
-	-.5,.5,-.5,
-	.5,.5,-.5,
-	.5,.5,-.5,
-	.5,-.5,-.5,
-	-.5,-.5,-.5,
+	0.0f,
+	0.0f + BLOCK_SIZE,
+	0.0f,
 
-	.5,-.5,-.5,
-	.5,.5,-.5,
-	.5,.5,.5,
-	.5,.5,.5,
-	.5,-.5,.5,
-	.5,-.5,-.5,
+	0.0f,
+	0.0f + BLOCK_SIZE,
+	0.0f + BLOCK_SIZE,
 
-	.5,-.5,.5,
-	.5,.5,.5,
-	-.5,.5,.5,
-	-.5,.5,.5,
-	-.5,-.5,.5,
-	.5,-.5,.5,
+	0.0f + BLOCK_SIZE,
+	0.0f + BLOCK_SIZE,
+	0.0f + BLOCK_SIZE,
 
-	-.5,-.5,.5,
-	-.5,.5,.5,
-	-.5,.5,-.5,
-	-.5,.5,-.5,
-	-.5,-.5,-.5,
-	-.5,-.5,.5,
 
-	-.5,.5,-.5,
-	-.5,.5,.5,
-	.5,.5,.5,
-	.5,.5,.5,
-	.5,.5,-.5,
-	-.5,.5,-.5,
+	0.0f,
+	0.0f + BLOCK_SIZE,
+	0.0f,
 
-	-.5,-.5,-.5,
-	.5,-.5,-.5,
-	.5,-.5,.5,
-	.5,-.5,.5,
-	-.5,-.5,.5,
-	-.5,-.5,-.5
+	0.0f + BLOCK_SIZE,
+	0.0f + BLOCK_SIZE,
+	0.0f + BLOCK_SIZE,
+
+	0.0f + BLOCK_SIZE,
+	0.0f + BLOCK_SIZE,
+	0.0f,
+
+
+	0.0f,
+	0.0f,
+	0.0f,
+
+	0.0f + BLOCK_SIZE,
+	0.0f,
+	0.0f,
+
+	0.0f + BLOCK_SIZE,
+	0.0f,
+	0.0f + BLOCK_SIZE,
+
+
+	0.0f,
+	0.0f,
+	0.0f,
+
+	0.0f + BLOCK_SIZE,
+	0.0f,
+	0.0f + BLOCK_SIZE,
+
+	0.0f,
+	0.0f,
+	0.0f + BLOCK_SIZE,
+
+
+	0.0f,
+	0.0f,
+	0.0f,
+
+	0.0f,
+	0.0f,
+	0.0f + BLOCK_SIZE,
+
+	0.0f,
+	0.0f + BLOCK_SIZE,
+	0.0f + BLOCK_SIZE,
+
+
+	0.0f,
+	0.0f,
+	0.0f,
+
+	0.0f,
+	0.0f + BLOCK_SIZE,
+	0.0f + BLOCK_SIZE,
+
+	0.0f,
+	0.0f + BLOCK_SIZE,
+	0.0f,
+
+
+	0.0f + BLOCK_SIZE,
+	0.0f,
+	0.0f + BLOCK_SIZE,
+
+	0.0f + BLOCK_SIZE,
+	0.0f,
+	0.0f,
+
+	0.0f + BLOCK_SIZE,
+	0.0f + BLOCK_SIZE,
+	0.0f,
+
+
+	0.0f + BLOCK_SIZE,
+	0.0f,
+	0.0f + BLOCK_SIZE,
+
+	0.0f + BLOCK_SIZE,
+	0.0f + BLOCK_SIZE,
+	0.0f,
+
+	0.0f + BLOCK_SIZE,
+	0.0f + BLOCK_SIZE,
+	0.0f + BLOCK_SIZE,
+
+
+	0.0f,
+	0.0f,
+	0.0f + BLOCK_SIZE,
+
+	0.0f + BLOCK_SIZE,
+	0.0f,
+	0.0f + BLOCK_SIZE,
+
+	0.0f + BLOCK_SIZE,
+	0.0f + BLOCK_SIZE,
+	0.0f + BLOCK_SIZE,
+
+
+	0.0f,
+	0.0f,
+	0.0f + BLOCK_SIZE,
+
+	0.0f + BLOCK_SIZE,
+	0.0f + BLOCK_SIZE,
+	0.0f + BLOCK_SIZE,
+
+	0.0f,
+	0.0f + BLOCK_SIZE,
+	0.0f + BLOCK_SIZE,
+
+
+	0.0f + BLOCK_SIZE,
+	0.0f,
+	0.0f,
+
+	0.0f,
+	0.0f,
+	0.0f,
+
+	0.0f,
+	0.0f + BLOCK_SIZE,
+	0.0f,
+
+
+	0.0f + BLOCK_SIZE,
+	0.0f,
+	0.0f,
+
+	0.0f,
+	0.0f + BLOCK_SIZE,
+	0.0f,
+
+	0.0f + BLOCK_SIZE,
+	0.0f + BLOCK_SIZE,
+	0.0f
 };
+
 
 enum BlockID
 {
-	Air = 0,
-	Grass = 1,
-	Dirt = 2,
-	Stone = 3,
-	Bedrock = 4,
+	Grass,
+	Dirt,
+	Stone,
+	Bedrock,
+	WoodPlank,
+	Log,
+	Brick,
 
 	NUM_BLOCK_TYPES
 };
@@ -116,16 +232,8 @@ BlockData getBlockData(Block block, BlockDatabase *database)
 	return database->blocks[block.id];
 }
 
-TexturedModel getBlockModel(Block block, BlockDatabase *database)
-{
-	return getBlockData(block, database).model;
-}
 
-void drawBlock(Block block, BlockDatabase *database)
-{
-	TexturedModel model = getBlockModel(block, database);
-	drawTexturedModel(model);
-}
+
 
 glm::vec2 findUV(BlockID id, BlockSide side)
 {
@@ -167,6 +275,21 @@ glm::vec2 findUV(BlockID id, BlockSide side)
 		{
 			result.x = 1.0f / ATLASWIDTH;
 			result.y = 1.0f / ATLASHEIGHT;
+		}return result;
+		case WoodPlank:
+		{
+			result.x = 4.0f / ATLASWIDTH;
+			result.y = 1.0f;
+		}return result;
+		case Log:
+		{
+			result.x = 4.0f / ATLASWIDTH;
+			result.y = 1.0f / ATLASHEIGHT;
+		}return result;
+		case Brick:
+		{
+			result.x = 7.0f / ATLASWIDTH;
+			result.y = 1.0f;
 		}return result;
 		default:
 		{
@@ -228,23 +351,23 @@ void addUVs(BlockID id, BlockSide side, std::vector<float> *uvs)
 
 		case Left:
 		{
+			uvs->push_back(bottomLeft.x);
+			uvs->push_back(bottomLeft.y);
+
 			uvs->push_back(bottomRight.x);
 			uvs->push_back(bottomRight.y);
 
 			uvs->push_back(topRight.x);
 			uvs->push_back(topRight.y);
 
-			uvs->push_back(topLeft.x);
-			uvs->push_back(topLeft.y);
-
-			uvs->push_back(bottomRight.x);
-			uvs->push_back(bottomRight.y);
-
-			uvs->push_back(topLeft.x);
-			uvs->push_back(topLeft.y);
-
 			uvs->push_back(bottomLeft.x);
 			uvs->push_back(bottomLeft.y);
+
+			uvs->push_back(topRight.x);
+			uvs->push_back(topRight.y);
+
+			uvs->push_back(topLeft.x);
+			uvs->push_back(topLeft.y);
 		}return;
 
 		case Right:
@@ -315,4 +438,3 @@ void addUVs(BlockID id, BlockSide side, std::vector<float> *uvs)
 	}
 
 }
-

@@ -50,6 +50,12 @@
     <None Include="TexturedFragmentShader.glsl">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="BlackFragmentShader.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="BlackVertexShader.glsl">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stb_image.h">

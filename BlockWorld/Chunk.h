@@ -9,7 +9,7 @@
 #include "GameState.h"
 #include "Utility.h"
 
-#define GENERATE_HALF_SIZE 4
+#define GENERATE_HEIGHT 64
 
 #define CHUNK_SIZE 32
 
@@ -88,8 +88,8 @@ void generateChunkMesh(Chunk* chunk)
 			bool rightEmpty = (chunk->blocks.count(vec3ToInt(glm::ivec3(position.x + 1, position.y, position.z))) == 0);
 			bool upEmpty =    (chunk->blocks.count(vec3ToInt(glm::ivec3(position.x, position.y + 1, position.z))) == 0);
 			bool downEmpty =  (chunk->blocks.count(vec3ToInt(glm::ivec3(position.x, position.y - 1, position.z))) == 0);
-			bool frontEmpty = (chunk->blocks.count(vec3ToInt(glm::ivec3(position.x, position.y, position.z - 1))) == 0);
-			bool backEmpty =  (chunk->blocks.count(vec3ToInt(glm::ivec3(position.x, position.y, position.z + 1))) == 0);
+			bool frontEmpty = (chunk->blocks.count(vec3ToInt(glm::ivec3(position.x, position.y, position.z + 1))) == 0);
+			bool backEmpty =  (chunk->blocks.count(vec3ToInt(glm::ivec3(position.x, position.y, position.z - 1))) == 0);
 
 
 			if (upEmpty)
@@ -98,13 +98,13 @@ void generateChunkMesh(Chunk* chunk)
 				chunk->mesh.vertices.push_back((float)position.y + BLOCK_SIZE);
 				chunk->mesh.vertices.push_back((float)position.z);
 
-				chunk->mesh.vertices.push_back((float)position.x + BLOCK_SIZE);
+				chunk->mesh.vertices.push_back((float)position.x);
 				chunk->mesh.vertices.push_back((float)position.y + BLOCK_SIZE);
-				chunk->mesh.vertices.push_back((float)position.z);
+				chunk->mesh.vertices.push_back((float)position.z + BLOCK_SIZE);
 
 				chunk->mesh.vertices.push_back((float)position.x + BLOCK_SIZE);
 				chunk->mesh.vertices.push_back((float)position.y + BLOCK_SIZE);
-				chunk->mesh.vertices.push_back((float)position.z +  BLOCK_SIZE);
+				chunk->mesh.vertices.push_back((float)position.z + BLOCK_SIZE);
 
 
 				chunk->mesh.vertices.push_back((float)position.x);
@@ -113,11 +113,11 @@ void generateChunkMesh(Chunk* chunk)
 
 				chunk->mesh.vertices.push_back((float)position.x + BLOCK_SIZE);
 				chunk->mesh.vertices.push_back((float)position.y + BLOCK_SIZE);
-				chunk->mesh.vertices.push_back((float)position.z +  BLOCK_SIZE);
+				chunk->mesh.vertices.push_back((float)position.z + BLOCK_SIZE);
 
-				chunk->mesh.vertices.push_back((float)position.x);
+				chunk->mesh.vertices.push_back((float)position.x + BLOCK_SIZE);
 				chunk->mesh.vertices.push_back((float)position.y + BLOCK_SIZE);
-				chunk->mesh.vertices.push_back((float)position.z +  BLOCK_SIZE);
+				chunk->mesh.vertices.push_back((float)position.z);
 				addUVs((BlockID)block.id, Top, &chunk->mesh.uvs);
 			}
 
@@ -127,13 +127,13 @@ void generateChunkMesh(Chunk* chunk)
 				chunk->mesh.vertices.push_back((float)position.y);
 				chunk->mesh.vertices.push_back((float)position.z);
 
-				chunk->mesh.vertices.push_back((float)position.x);
+				chunk->mesh.vertices.push_back((float)position.x + BLOCK_SIZE);
 				chunk->mesh.vertices.push_back((float)position.y);
-				chunk->mesh.vertices.push_back((float)position.z +  BLOCK_SIZE);
+				chunk->mesh.vertices.push_back((float)position.z);
 
 				chunk->mesh.vertices.push_back((float)position.x + BLOCK_SIZE);
 				chunk->mesh.vertices.push_back((float)position.y);
-				chunk->mesh.vertices.push_back((float)position.z +  BLOCK_SIZE);
+				chunk->mesh.vertices.push_back((float)position.z + BLOCK_SIZE);
 
 
 				chunk->mesh.vertices.push_back((float)position.x);
@@ -144,9 +144,9 @@ void generateChunkMesh(Chunk* chunk)
 				chunk->mesh.vertices.push_back((float)position.y);
 				chunk->mesh.vertices.push_back((float)position.z +  BLOCK_SIZE);
 
-				chunk->mesh.vertices.push_back((float)position.x + BLOCK_SIZE);
+				chunk->mesh.vertices.push_back((float)position.x);
 				chunk->mesh.vertices.push_back((float)position.y);
-				chunk->mesh.vertices.push_back((float)position.z);
+				chunk->mesh.vertices.push_back((float)position.z + BLOCK_SIZE);
 				addUVs((BlockID)block.id, Bottom, &chunk->mesh.uvs);
 			}
 
@@ -157,12 +157,12 @@ void generateChunkMesh(Chunk* chunk)
 				chunk->mesh.vertices.push_back((float)position.z);
 
 				chunk->mesh.vertices.push_back((float)position.x);
-				chunk->mesh.vertices.push_back((float)position.y + BLOCK_SIZE);
-				chunk->mesh.vertices.push_back((float)position.z);
+				chunk->mesh.vertices.push_back((float)position.y);
+				chunk->mesh.vertices.push_back((float)position.z + BLOCK_SIZE);
 
 				chunk->mesh.vertices.push_back((float)position.x);
 				chunk->mesh.vertices.push_back((float)position.y + BLOCK_SIZE);
-				chunk->mesh.vertices.push_back((float)position.z +  BLOCK_SIZE);
+				chunk->mesh.vertices.push_back((float)position.z + BLOCK_SIZE);
 
 
 				chunk->mesh.vertices.push_back((float)position.x);
@@ -171,11 +171,11 @@ void generateChunkMesh(Chunk* chunk)
 
 				chunk->mesh.vertices.push_back((float)position.x);
 				chunk->mesh.vertices.push_back((float)position.y + BLOCK_SIZE);
-				chunk->mesh.vertices.push_back((float)position.z +  BLOCK_SIZE);
+				chunk->mesh.vertices.push_back((float)position.z + BLOCK_SIZE);
 
 				chunk->mesh.vertices.push_back((float)position.x);
-				chunk->mesh.vertices.push_back((float)position.y);
-				chunk->mesh.vertices.push_back((float)position.z +  BLOCK_SIZE);
+				chunk->mesh.vertices.push_back((float)position.y + BLOCK_SIZE);
+				chunk->mesh.vertices.push_back((float)position.z);
 				addUVs((BlockID)block.id, Left, &chunk->mesh.uvs);
 			}
 
@@ -183,16 +183,7 @@ void generateChunkMesh(Chunk* chunk)
 			{
 				chunk->mesh.vertices.push_back((float)position.x + BLOCK_SIZE);
 				chunk->mesh.vertices.push_back((float)position.y);
-				chunk->mesh.vertices.push_back((float)position.z);
-
-				chunk->mesh.vertices.push_back((float)position.x + BLOCK_SIZE);
-				chunk->mesh.vertices.push_back((float)position.y);
-				chunk->mesh.vertices.push_back((float)position.z +  BLOCK_SIZE);
-
-				chunk->mesh.vertices.push_back((float)position.x + BLOCK_SIZE);
-				chunk->mesh.vertices.push_back((float)position.y + BLOCK_SIZE);
-				chunk->mesh.vertices.push_back((float)position.z +  BLOCK_SIZE);
-
+				chunk->mesh.vertices.push_back((float)position.z + BLOCK_SIZE);
 
 				chunk->mesh.vertices.push_back((float)position.x + BLOCK_SIZE);
 				chunk->mesh.vertices.push_back((float)position.y);
@@ -200,11 +191,20 @@ void generateChunkMesh(Chunk* chunk)
 
 				chunk->mesh.vertices.push_back((float)position.x + BLOCK_SIZE);
 				chunk->mesh.vertices.push_back((float)position.y + BLOCK_SIZE);
-				chunk->mesh.vertices.push_back((float)position.z +  BLOCK_SIZE);
+				chunk->mesh.vertices.push_back((float)position.z);
+
+
+				chunk->mesh.vertices.push_back((float)position.x + BLOCK_SIZE);
+				chunk->mesh.vertices.push_back((float)position.y);
+				chunk->mesh.vertices.push_back((float)position.z + BLOCK_SIZE);
 
 				chunk->mesh.vertices.push_back((float)position.x + BLOCK_SIZE);
 				chunk->mesh.vertices.push_back((float)position.y + BLOCK_SIZE);
 				chunk->mesh.vertices.push_back((float)position.z);
+
+				chunk->mesh.vertices.push_back((float)position.x + BLOCK_SIZE);
+				chunk->mesh.vertices.push_back((float)position.y + BLOCK_SIZE);
+				chunk->mesh.vertices.push_back((float)position.z + BLOCK_SIZE);
 				addUVs((BlockID)block.id, Right, &chunk->mesh.uvs);
 			}
 
@@ -212,28 +212,28 @@ void generateChunkMesh(Chunk* chunk)
 			{
 				chunk->mesh.vertices.push_back((float)position.x);
 				chunk->mesh.vertices.push_back((float)position.y);
-				chunk->mesh.vertices.push_back((float)position.z);
+				chunk->mesh.vertices.push_back((float)position.z + BLOCK_SIZE);
 
 				chunk->mesh.vertices.push_back((float)position.x + BLOCK_SIZE);
 				chunk->mesh.vertices.push_back((float)position.y);
-				chunk->mesh.vertices.push_back((float)position.z);
+				chunk->mesh.vertices.push_back((float)position.z + BLOCK_SIZE);
 
 				chunk->mesh.vertices.push_back((float)position.x + BLOCK_SIZE);
 				chunk->mesh.vertices.push_back((float)position.y + BLOCK_SIZE);
-				chunk->mesh.vertices.push_back((float)position.z);
+				chunk->mesh.vertices.push_back((float)position.z + BLOCK_SIZE);
 
 
 				chunk->mesh.vertices.push_back((float)position.x);
 				chunk->mesh.vertices.push_back((float)position.y);
-				chunk->mesh.vertices.push_back((float)position.z);
+				chunk->mesh.vertices.push_back((float)position.z + BLOCK_SIZE);
 
 				chunk->mesh.vertices.push_back((float)position.x + BLOCK_SIZE);
 				chunk->mesh.vertices.push_back((float)position.y + BLOCK_SIZE);
-				chunk->mesh.vertices.push_back((float)position.z);
+				chunk->mesh.vertices.push_back((float)position.z + BLOCK_SIZE);
 
 				chunk->mesh.vertices.push_back((float)position.x);
 				chunk->mesh.vertices.push_back((float)position.y + BLOCK_SIZE);
-				chunk->mesh.vertices.push_back((float)position.z);
+				chunk->mesh.vertices.push_back((float)position.z + BLOCK_SIZE);
 				addUVs((BlockID)block.id, Front, &chunk->mesh.uvs);
 			}
 
@@ -241,28 +241,28 @@ void generateChunkMesh(Chunk* chunk)
 			{
 				chunk->mesh.vertices.push_back((float)position.x + BLOCK_SIZE);
 				chunk->mesh.vertices.push_back((float)position.y);
-				chunk->mesh.vertices.push_back((float)position.z +  BLOCK_SIZE);
+				chunk->mesh.vertices.push_back((float)position.z);
 
 				chunk->mesh.vertices.push_back((float)position.x);
 				chunk->mesh.vertices.push_back((float)position.y);
-				chunk->mesh.vertices.push_back((float)position.z +  BLOCK_SIZE);
+				chunk->mesh.vertices.push_back((float)position.z);
 
 				chunk->mesh.vertices.push_back((float)position.x);
 				chunk->mesh.vertices.push_back((float)position.y + BLOCK_SIZE);
-				chunk->mesh.vertices.push_back((float)position.z +  BLOCK_SIZE);
+				chunk->mesh.vertices.push_back((float)position.z);
 
 
 				chunk->mesh.vertices.push_back((float)position.x + BLOCK_SIZE);
 				chunk->mesh.vertices.push_back((float)position.y);
-				chunk->mesh.vertices.push_back((float)position.z +  BLOCK_SIZE);
+				chunk->mesh.vertices.push_back((float)position.z);
 
 				chunk->mesh.vertices.push_back((float)position.x);
 				chunk->mesh.vertices.push_back((float)position.y + BLOCK_SIZE);
-				chunk->mesh.vertices.push_back((float)position.z +  BLOCK_SIZE);
+				chunk->mesh.vertices.push_back((float)position.z);
 
 				chunk->mesh.vertices.push_back((float)position.x + BLOCK_SIZE);
 				chunk->mesh.vertices.push_back((float)position.y + BLOCK_SIZE);
-				chunk->mesh.vertices.push_back((float)position.z +  BLOCK_SIZE);
+				chunk->mesh.vertices.push_back((float)position.z);
 				addUVs((BlockID)block.id, Back, &chunk->mesh.uvs);
 			}
 		
@@ -289,8 +289,8 @@ void playerPlaceBlock(BlockID id, glm::ivec3 pos, Chunk *chunk)
 		chunk->blocks[hashKey] = Block{ (uint8_t)id };
 		debugState.nBlocks++;
 		generateChunkMesh(chunk);
+		std::cout << "Block Placed At: " << pos.x << " " << pos.y << " " << pos.z << std::endl; 
 	}
-	//std::cout << "Block Placed At: " << pos.x << " " << pos.y << " " << pos.z << std::endl; 
 }
 
 void removeBlock(glm::ivec3 pos, Chunk *chunk)

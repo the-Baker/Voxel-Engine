@@ -33,7 +33,9 @@ struct GameState
 	unsigned int atlas = loadTexture("MinecraftTextureAtlas.png");
 	Ray playerRay;
 	glm::vec3 focusedBlockPos;
+	glm::vec3 focusedFacePos;
 	BlockID blockTypeToPlace = Grass;
+	RawModel cubeModel;
 };
 
 

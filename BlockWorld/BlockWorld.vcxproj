@@ -132,6 +132,8 @@
     <ClCompile Include="simplextextures.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="BlackFragmentShader.glsl" />
+    <None Include="BlackVertexShader.glsl" />
     <None Include="CubeInstanceFragmentShader.glsl" />
     <None Include="CubeInstanceVertexShader.glsl" />
     <None Include="modelFragmentShader.glsl" />
