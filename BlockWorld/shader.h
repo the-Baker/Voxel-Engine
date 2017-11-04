@@ -48,6 +48,8 @@ GLuint createShader(const char* vertexPath, const char* fragmentPath)
 	return shaderProgram;
 }
 
+
+//@Speed Uniform Locations can be optained once instead of every frame
 void setUniformInt(char* uniformName, int value, GLuint program)
 {
 	int location = glGetUniformLocation(program, uniformName);
@@ -68,6 +70,11 @@ void setUniformFloat(char* uniformName, float f, GLuint program)
 {
 	int location = glGetUniformLocation(program, uniformName);
 	glUniform1f(location, f);
+}
+void setUniformUInt(char* uniformName, unsigned int i, GLuint program)
+{
+	int location = glGetUniformLocation(program, uniformName);
+	glUniform1f(location, i);
 }
 
 char* file_read(const char* filename) {

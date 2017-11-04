@@ -19,6 +19,7 @@ struct ChunkMesh
 {
 	std::vector<float> vertices;
 	std::vector<float> uvs;
+	std::vector<float> lightValues;
 	RawModel model;
 };
 
@@ -73,6 +74,7 @@ void generateChunkMesh(Chunk* chunk)
 {
 	chunk->mesh.vertices.clear();
 	chunk->mesh.uvs.clear();
+	chunk->mesh.lightValues.clear();
 
 	for (std::unordered_map<uint32_t, Block>::iterator iter = chunk->blocks.begin(); iter != chunk->blocks.end(); ++iter)
 	{
@@ -118,6 +120,11 @@ void generateChunkMesh(Chunk* chunk)
 				chunk->mesh.vertices.push_back((float)position.x + BLOCK_SIZE);
 				chunk->mesh.vertices.push_back((float)position.y + BLOCK_SIZE);
 				chunk->mesh.vertices.push_back((float)position.z);
+
+				for (int i = 0; i < 6; i++)
+				{
+					chunk->mesh.lightValues.push_back(position.y / 16.0f);
+				}
 				addUVs((BlockID)block.id, Top, &chunk->mesh.uvs);
 			}
 
@@ -148,6 +155,10 @@ void generateChunkMesh(Chunk* chunk)
 				chunk->mesh.vertices.push_back((float)position.y);
 				chunk->mesh.vertices.push_back((float)position.z + BLOCK_SIZE);
 				addUVs((BlockID)block.id, Bottom, &chunk->mesh.uvs);
+				for (int i = 0; i < 6; i++)
+				{
+					chunk->mesh.lightValues.push_back(position.y / 16.0f);
+				}
 			}
 
 			if (leftEmpty)
@@ -177,6 +188,10 @@ void generateChunkMesh(Chunk* chunk)
 				chunk->mesh.vertices.push_back((float)position.y + BLOCK_SIZE);
 				chunk->mesh.vertices.push_back((float)position.z);
 				addUVs((BlockID)block.id, Left, &chunk->mesh.uvs);
+				for (int i = 0; i < 6; i++)
+				{
+					chunk->mesh.lightValues.push_back(position.y / 16.0f);
+				}
 			}
 
 			if (rightEmpty)
@@ -206,6 +221,10 @@ void generateChunkMesh(Chunk* chunk)
 				chunk->mesh.vertices.push_back((float)position.y + BLOCK_SIZE);
 				chunk->mesh.vertices.push_back((float)position.z + BLOCK_SIZE);
 				addUVs((BlockID)block.id, Right, &chunk->mesh.uvs);
+				for (int i = 0; i < 6; i++)
+				{
+					chunk->mesh.lightValues.push_back(position.y / 16.0f);
+				}
 			}
 
 			if (frontEmpty)
@@ -235,6 +254,10 @@ void generateChunkMesh(Chunk* chunk)
 				chunk->mesh.vertices.push_back((float)position.y + BLOCK_SIZE);
 				chunk->mesh.vertices.push_back((float)position.z + BLOCK_SIZE);
 				addUVs((BlockID)block.id, Front, &chunk->mesh.uvs);
+				for (int i = 0; i < 6; i++)
+				{
+					chunk->mesh.lightValues.push_back(position.y / 16.0f);
+				}
 			}
 
 			if (backEmpty)
@@ -264,11 +287,17 @@ void generateChunkMesh(Chunk* chunk)
 				chunk->mesh.vertices.push_back((float)position.y + BLOCK_SIZE);
 				chunk->mesh.vertices.push_back((float)position.z);
 				addUVs((BlockID)block.id, Back, &chunk->mesh.uvs);
+				for (int i = 0; i < 6; i++)
+				{
+					chunk->mesh.lightValues.push_back(position.y / 16.0f);
+				}
 			}
 		
 		}
 	}
-	chunk->mesh.model = loadToVAO(&chunk->mesh.vertices[0], (unsigned int)chunk->mesh.vertices.size(), &chunk->mesh.uvs[0], (unsigned int)chunk->mesh.uvs.size());
+	chunk->mesh.model = loadToVAO(&chunk->mesh.vertices[0], (unsigned int)chunk->mesh.vertices.size(), &chunk->mesh.uvs[0], 
+									(unsigned int)chunk->mesh.uvs.size(), &chunk->mesh.lightValues[0], 
+										(unsigned int)chunk->mesh.lightValues.size());
 }
 
 glm::ivec3 worldToChunkPosition(glm::ivec3 worldPos, glm::ivec2 chunkPos)
@@ -289,7 +318,6 @@ void playerPlaceBlock(BlockID id, glm::ivec3 pos, Chunk *chunk)
 		chunk->blocks[hashKey] = Block{ (uint8_t)id };
 		debugState.nBlocks++;
 		generateChunkMesh(chunk);
-		std::cout << "Block Placed At: " << pos.x << " " << pos.y << " " << pos.z << std::endl; 
 	}
 }
 
@@ -302,7 +330,6 @@ void removeBlock(glm::ivec3 pos, Chunk *chunk)
 		chunk->blocks.erase(hashKey);
 		debugState.nChunks--;
 		generateChunkMesh(chunk);
-		std::cout << "removed block at: " << pos.x << " " << pos.y << " " << pos.z << std::endl;
 	}
 }
 

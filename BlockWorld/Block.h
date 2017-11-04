@@ -200,40 +200,11 @@ enum BlockSide
 	Right
 };
 
-struct BlockData
-{
-	TexturedModel model;
-};
-
-struct BlockDatabase
-{
-	BlockData *blocks;
-};
-
 struct Block
 {
 	uint8_t id;
+	float data;
 };
-
-
-void loadBlockData(BlockDatabase *database, unsigned int shaderID)
-{
-	database->blocks = (BlockData*)calloc(NUM_BLOCK_TYPES, sizeof(BlockData));
-	//TexturedModel tModel;
-	for (int i = 0; i < NUM_BLOCK_TYPES; i++)
-	{
-		bindAttribute(shaderID, "inPos", 0);
-		bindAttribute(shaderID, "inTexCoords", 1);
-	}
-}
-
-
-BlockData getBlockData(Block block, BlockDatabase *database)
-{
-	return database->blocks[block.id];
-}
-
-
 
 
 glm::vec2 findUV(BlockID id, BlockSide side)

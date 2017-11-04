@@ -123,7 +123,7 @@ void generateWorldAroundPosition(GameState *state, glm::ivec2 pos, int size)
 		for (int x = -size; x < size; x++)
 		{
 			glm::ivec2 posToGen = { pos.x + x, pos.y + z };
-			if (!checkChunkExists(posToGen, state));
+			if (!checkChunkExists(posToGen, state))
 				generateChunk(state, posToGen);
 		}
 	}
@@ -141,7 +141,7 @@ void initGame(GameState *state)
 		addUVs(Selector, Top, &cubeUVs);
 	}
 
-	cubeModel = loadToVAO(cubeVertices, ARRAY_COUNT(cubeVertices), &cubeUVs[0], cubeUVs.size());
+	cubeModel = loadToVAO(cubeVertices, ARRAY_COUNT(cubeVertices), &cubeUVs[0], (unsigned int)cubeUVs.size());
 	state->cubeModel = cubeModel;
 
 	for (int z = 0; z < WORLD_SIZE; z++)
@@ -177,7 +177,6 @@ int main(int argc, char* argv[])
 	
 
 	GLuint texturedShader = createShader("TexturedVertexShader.glsl", "TexturedFragmentShader.glsl");
-	GLuint blackShader = createShader("BlackVertexShader.glsl", "BlackVertexShader.glsl");
 
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -282,14 +281,12 @@ int main(int argc, char* argv[])
 					{
 						Chunk *chunkWithBlockToRemove = findChunkAtWorldPos(&state, state.focusedBlockPos);
 						removeBlock(glm::trunc(state.focusedBlockPos), chunkWithBlockToRemove);
-						std::cout << state.focusedBlockPos.x << " " << state.focusedBlockPos.y << " " << state.focusedBlockPos.z << std::endl;
 					}
 					if (windowEvent.button.button == SDL_BUTTON_RIGHT)
 					{
-						state.focusedFacePos = findLastSpace(0.001f,state.player.pickDistance, &state.playerRay, &state);
+						state.focusedFacePos = findLastSpace(0.001f, state.player.pickDistance, &state.playerRay, &state);
 						Chunk *chunkWithBlockToPlace = findChunkAtWorldPos(&state, state.focusedFacePos);
 						playerPlaceBlock(state.blockTypeToPlace, glm::ivec3(state.focusedFacePos.x, state.focusedFacePos.y, state.focusedFacePos.z), chunkWithBlockToPlace);
-						std::cout << state.focusedFacePos.x << " " << state.focusedFacePos.y << " " << state.focusedFacePos.z << std::endl;
 					}
 				}break;
 			}
@@ -345,7 +342,7 @@ int main(int argc, char* argv[])
 			state.player.moveSpeed = 10.0f;
 
 
-
+		glDisable(GL_BLEND);
 
 		glUseProgram(texturedShader);
 		glm::mat4 projection = glm::perspective(glm::radians(state.player.camera.fov), (float)windowWidth / (float)windowHeight, 0.1f, state.player.camera.viewDistance);
@@ -366,8 +363,8 @@ int main(int argc, char* argv[])
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glm::mat4 model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(state.focusedBlockPos));
-		model = glm::scale(model, glm::vec3(1.02f, 1.02f, 1.02f));
-		model = glm::translate(model, glm::vec3(-0.01, -0.01, -0.01));
+		model = glm::scale(model, glm::vec3(1.0025f, 1.0025f, 1.0025f));
+		model = glm::translate(model, glm::vec3(-0.00125f, -0.00125f, -0.00125f));
 		setUniformMat4("model", model, texturedShader);
 		drawModel(state.cubeModel, state.atlas);
 
@@ -381,7 +378,8 @@ int main(int argc, char* argv[])
 
 		glUseProgram(0);
 
-		float vertices[] = {
+		float vertices[] = 
+		{
 			-0.005f, -0.01f, 0.0f,
 			 0.005f, -0.01f, 0.0f,
 			 0.00f,  0.01f, 0.0f
@@ -390,10 +388,6 @@ int main(int argc, char* argv[])
 		RawModel ui;
 		ui = loadToVAO(vertices, ARRAY_COUNT(vertices), vertices, 3);
 
-		projection = glm::ortho(0.0, (double)windowWidth, (double)windowHeight, 0.0, -1.0, 1.0);
-		view = glm::mat4(1.0f);
-		setUniformMat4("projection", projection, blackShader);
-		setUniformMat4("view", view, blackShader);
 
 		drawModel(ui);
 

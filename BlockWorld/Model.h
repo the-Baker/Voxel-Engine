@@ -101,6 +101,17 @@ void storeDataInAttributeList(float *data, unsigned int dataCount, unsigned int 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
+void storeDataInAttributeList(unsigned int *data, unsigned int dataCount, unsigned int attributeNumber, unsigned int dimensions)
+{
+	unsigned int vbo;
+	glGenBuffers(1, &vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * dataCount, data, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(attributeNumber);
+	glVertexAttribPointer(attributeNumber, dimensions, GL_UNSIGNED_INT, GL_FALSE, 0, (void*)0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
 void bindAttribute(unsigned int shader, char* variableName, int attributeNumber)
 {
 	glBindAttribLocation(shader, attributeNumber, variableName);
@@ -125,6 +136,21 @@ RawModel loadToVAO(float *vertices, unsigned int vertexCount, float *uvs, unsign
 	glBindVertexArray(0);
 	return RawModel({ vao, vertexCount });
 }
+
+RawModel loadToVAO(float *vertices, unsigned int vertexCount, float *uvs, unsigned int uvCount, float *other, unsigned int otherCount)
+{
+	unsigned int vao;
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+	storeDataInAttributeList(vertices, vertexCount, 0, 3);
+	storeDataInAttributeList(uvs, uvCount, 1, 2);
+	storeDataInAttributeList(other, otherCount, 2, 1);
+
+
+	glBindVertexArray(0);
+	return RawModel({ vao, vertexCount });
+}
+
 
 RawModel loadToVAO(float *vertices, unsigned int vertexCount)
 {
