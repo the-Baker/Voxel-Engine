@@ -29,21 +29,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="vertexShader.glsl">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="modelVertexShader.glsl">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="modelFragmentShader.glsl">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="CubeInstanceVertexShader.glsl">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="CubeInstanceFragmentShader.glsl">
-      <Filter>Shaders</Filter>
-    </None>
     <None Include="TexturedVertexShader.glsl">
       <Filter>Shaders</Filter>
     </None>
@@ -54,6 +39,12 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="BlackVertexShader.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="LightedFragmentShader.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="LightedVertexShader.glsl">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

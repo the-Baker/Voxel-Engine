@@ -134,13 +134,10 @@
   <ItemGroup>
     <None Include="BlackFragmentShader.glsl" />
     <None Include="BlackVertexShader.glsl" />
-    <None Include="CubeInstanceFragmentShader.glsl" />
-    <None Include="CubeInstanceVertexShader.glsl" />
-    <None Include="modelFragmentShader.glsl" />
-    <None Include="modelVertexShader.glsl" />
+    <None Include="LightedFragmentShader.glsl" />
+    <None Include="LightedVertexShader.glsl" />
     <None Include="TexturedFragmentShader.glsl" />
     <None Include="TexturedVertexShader.glsl" />
-    <None Include="vertexShader.glsl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Block.h" />

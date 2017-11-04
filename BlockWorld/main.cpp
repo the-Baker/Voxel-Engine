@@ -176,7 +176,9 @@ int main(int argc, char* argv[])
 
 	
 
+	GLuint lightedShader = createShader("LightedVertexShader.glsl", "LightedFragmentShader.glsl");
 	GLuint texturedShader = createShader("TexturedVertexShader.glsl", "TexturedFragmentShader.glsl");
+
 
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -344,21 +346,22 @@ int main(int argc, char* argv[])
 
 		glDisable(GL_BLEND);
 
-		glUseProgram(texturedShader);
+		glUseProgram(lightedShader);
 		glm::mat4 projection = glm::perspective(glm::radians(state.player.camera.fov), (float)windowWidth / (float)windowHeight, 0.1f, state.player.camera.viewDistance);
 		glm::mat4 view = GetCameraViewMatrix(state.player.camera);
-		setUniformMat4("projection", projection, texturedShader);
-		setUniformMat4("view", view, texturedShader);
+		setUniformMat4("projection", projection, lightedShader);
+		setUniformMat4("view", view, lightedShader);
 
 
 		int blockCounter = 0;
 		int chunkCounter = 0;
 		for (std::unordered_map<long long int, Chunk>::iterator iter = state.chunks.begin(); iter != state.chunks.end(); ++iter)
 		{
-			drawChunk((Chunk*)&iter->second,&state, texturedShader);
+			drawChunk((Chunk*)&iter->second,&state, lightedShader);
 			blockCounter += (int)iter->second.blocks.size();
 		}
 
+		glUseProgram(texturedShader);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glm::mat4 model = glm::mat4(1.0f);
@@ -366,6 +369,8 @@ int main(int argc, char* argv[])
 		model = glm::scale(model, glm::vec3(1.0025f, 1.0025f, 1.0025f));
 		model = glm::translate(model, glm::vec3(-0.00125f, -0.00125f, -0.00125f));
 		setUniformMat4("model", model, texturedShader);
+		setUniformMat4("view", view, lightedShader);
+		setUniformMat4("projection", projection, lightedShader);
 		drawModel(state.cubeModel, state.atlas);
 
 		{

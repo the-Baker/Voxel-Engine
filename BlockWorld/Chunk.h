@@ -123,7 +123,7 @@ void generateChunkMesh(Chunk* chunk)
 
 				for (int i = 0; i < 6; i++)
 				{
-					chunk->mesh.lightValues.push_back(position.y / 16.0f);
+					chunk->mesh.lightValues.push_back(1.1f);
 				}
 				addUVs((BlockID)block.id, Top, &chunk->mesh.uvs);
 			}
@@ -157,7 +157,7 @@ void generateChunkMesh(Chunk* chunk)
 				addUVs((BlockID)block.id, Bottom, &chunk->mesh.uvs);
 				for (int i = 0; i < 6; i++)
 				{
-					chunk->mesh.lightValues.push_back(position.y / 16.0f);
+					chunk->mesh.lightValues.push_back(0.4f);
 				}
 			}
 
@@ -190,7 +190,7 @@ void generateChunkMesh(Chunk* chunk)
 				addUVs((BlockID)block.id, Left, &chunk->mesh.uvs);
 				for (int i = 0; i < 6; i++)
 				{
-					chunk->mesh.lightValues.push_back(position.y / 16.0f);
+					chunk->mesh.lightValues.push_back(0.7f);
 				}
 			}
 
@@ -223,7 +223,7 @@ void generateChunkMesh(Chunk* chunk)
 				addUVs((BlockID)block.id, Right, &chunk->mesh.uvs);
 				for (int i = 0; i < 6; i++)
 				{
-					chunk->mesh.lightValues.push_back(position.y / 16.0f);
+					chunk->mesh.lightValues.push_back(0.7f);
 				}
 			}
 
@@ -256,7 +256,7 @@ void generateChunkMesh(Chunk* chunk)
 				addUVs((BlockID)block.id, Front, &chunk->mesh.uvs);
 				for (int i = 0; i < 6; i++)
 				{
-					chunk->mesh.lightValues.push_back(position.y / 16.0f);
+					chunk->mesh.lightValues.push_back(0.7f);
 				}
 			}
 
@@ -289,7 +289,7 @@ void generateChunkMesh(Chunk* chunk)
 				addUVs((BlockID)block.id, Back, &chunk->mesh.uvs);
 				for (int i = 0; i < 6; i++)
 				{
-					chunk->mesh.lightValues.push_back(position.y / 16.0f);
+					chunk->mesh.lightValues.push_back(0.7f);
 				}
 			}
 		
