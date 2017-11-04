@@ -185,6 +185,7 @@ enum BlockID
 	WoodPlank,
 	Log,
 	Brick,
+	Selector,
 
 	NUM_BLOCK_TYPES
 };
@@ -290,6 +291,11 @@ glm::vec2 findUV(BlockID id, BlockSide side)
 		{
 			result.x = 7.0f / ATLASWIDTH;
 			result.y = 1.0f;
+		}return result;
+		case Selector:
+		{
+			result.x = 10.0f / ATLASWIDTH;
+			result.y = 8.0f / ATLASHEIGHT;
 		}return result;
 		default:
 		{

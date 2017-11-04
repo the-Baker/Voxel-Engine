@@ -30,7 +30,7 @@ struct GameState
 	float currentTime = 0.0f;
 	std::unordered_map<long long int, Chunk> chunks;
 	BlockDatabase bDatabase;
-	unsigned int atlas = loadTexture("MinecraftTextureAtlas.png");
+	unsigned int atlas = loadTexture("MinecraftAdapted.png");
 	Ray playerRay;
 	glm::vec3 focusedBlockPos;
 	glm::vec3 focusedFacePos;

@@ -135,7 +135,13 @@ void initGame(GameState *state)
 	state->mode = WORLD;
 	initPlayer(&state->player);
 	RawModel cubeModel;
-	cubeModel = loadToVAO(cubeVertices, ARRAY_COUNT(cubeVertices), cubeVertices, ARRAY_COUNT(cubeVertices));
+	std::vector<float> cubeUVs;
+	for (int i = 0; i < 6; i++) 
+	{
+		addUVs(Selector, Top, &cubeUVs);
+	}
+
+	cubeModel = loadToVAO(cubeVertices, ARRAY_COUNT(cubeVertices), &cubeUVs[0], cubeUVs.size());
 	state->cubeModel = cubeModel;
 
 	for (int z = 0; z < WORLD_SIZE; z++)
@@ -171,7 +177,8 @@ int main(int argc, char* argv[])
 	
 
 	GLuint texturedShader = createShader("TexturedVertexShader.glsl", "TexturedFragmentShader.glsl");
-	GLuint blackShader = createShader("BlackVertexShader.glsl", "BlackFragmentShader.glsl");
+	GLuint blackShader = createShader("BlackVertexShader.glsl", "BlackVertexShader.glsl");
+
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
@@ -355,20 +362,14 @@ int main(int argc, char* argv[])
 			blockCounter += (int)iter->second.blocks.size();
 		}
 
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-		glUseProgram(blackShader);
-		projection = glm::perspective(glm::radians(state.player.camera.fov), (float)windowWidth / (float)windowHeight, 0.1f, state.player.camera.viewDistance);
-		view = GetCameraViewMatrix(state.player.camera);
-		setUniformMat4("projection", projection, blackShader);
-		setUniformMat4("view", view, blackShader);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glm::mat4 model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(state.focusedBlockPos));
-		model = glm::scale(model, glm::vec3(1.003f, 1.003f, 1.003f));
-		setUniformMat4("model", model, blackShader);
-		drawModel(state.cubeModel);
-
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		model = glm::scale(model, glm::vec3(1.02f, 1.02f, 1.02f));
+		model = glm::translate(model, glm::vec3(-0.01, -0.01, -0.01));
+		setUniformMat4("model", model, texturedShader);
+		drawModel(state.cubeModel, state.atlas);
 
 		{
 

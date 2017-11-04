@@ -5,7 +5,6 @@
 #include "Utility.h"
 
 
-//I THINK I AM RENDERING THE Z COORDINATES OF THINGS WRONG
 
 glm::vec3 getRayDirection(Camera camera, glm::vec2 screenCoords, glm::vec2 screenDimensions)
 {
