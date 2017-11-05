@@ -92,8 +92,6 @@ void generateChunk(GameState *state, glm::ivec2 position)
 			for (int x = 0; x < CHUNK_SIZE; x++)
 			{
 				int height = (int)scaled_octave_noise_2d(5.0f, 7.0f, 0.0007f, 16.0f, 48.0f, (float)(chunkBottomLeft.x * CHUNK_SIZE + x), (float)(chunkBottomLeft.z * CHUNK_SIZE + z));
-				//float shouldPlace = scaled_octave_noise_3d(4.0f, 2.0f, 0.007f, -1.0f, 1.0f, (float)(chunkBottomLeft.x * CHUNK_SIZE + x),(float)(chunkBottomLeft.y + y), (float)(chunkBottomLeft.z * CHUNK_SIZE + z));
-
 				for (int i = 0; i < height; i++)
 				{
 					glm::ivec3 positionToPlace = glm::ivec3(x, i, z);
@@ -327,7 +325,7 @@ int main(int argc, char* argv[])
 		}
 
 
-		SDL_SetWindowTitle(window, std::string("X: " + std::to_string(state.player.position.x) + " Y: " + std::to_string(state.player.position.y) + " Z: " + std::to_string(state.player.position.z) + " Chunks: " + std::to_string(debugState.nChunks) + " Blocks: " + std::to_string(debugState.nBlocks) + " FPS: " + std::to_string(1 / state.deltaTime)).c_str());
+		SDL_SetWindowTitle(window, std::string("X: " + std::to_string(state.player.position.x) + " Y: " + std::to_string(state.player.position.y) + " Z: " + std::to_string(state.player.position.z) + " Chunks: " + std::to_string(debugState.nChunks) + " Blocks: " + std::to_string(debugState.nBlocks) + " FT: " + std::to_string(state.deltaTime) + " FPS: " + std::to_string(1 / state.deltaTime)).c_str());
 
 		glViewport(0, 0, windowWidth, windowHeight);
 		glClearColor(9.0f / 255.0f, 64.0f / 255.0f, 255.0f / 255.0f, 1.0f);

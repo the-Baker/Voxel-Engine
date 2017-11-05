@@ -203,7 +203,7 @@ enum BlockSide
 struct Block
 {
 	uint8_t id;
-	float data;
+	float data = 16;
 };
 
 
