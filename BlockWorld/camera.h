@@ -9,7 +9,7 @@ const float YAW = -90.0f;
 const float PITCH = 0.0f;
 
 const float SENSITIVTY = 0.15f;
-const float ZOOM = 65.0f;
+const float ZOOM = 80.0f;
 
 struct Camera
 {

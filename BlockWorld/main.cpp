@@ -13,7 +13,7 @@
 #include "Utility.h"
 #include "simplexnoise.h"
 
-
+#include "Physics.h"
 #include "Player.h"
 #include "Model.h"
 #include "Block.h"
@@ -24,61 +24,6 @@
 #include "camera.h"
 
 
-
-
-
-
-void placeTree(glm::ivec3 position, Chunk* chunk)
-{
-	int x = position.x;
-	int y = position.y;
-	int z = position.z;
-
-	for (int i = 1; i <= 6; i++)
-	{
-		placeBlock(Stone, glm::ivec3(x, y + i, z), chunk);
-	}
-	for (int i = 4; i <= 5; i++)
-	{
-		placeBlock(Bedrock, glm::ivec3(x - 2, y + i, z - 2), chunk);
-		placeBlock(Bedrock, glm::ivec3(x - 1, y + i, z - 2), chunk);
-		placeBlock(Bedrock, glm::ivec3(x    , y + i, z - 2), chunk);
-		placeBlock(Bedrock, glm::ivec3(x + 1, y + i, z - 2), chunk);
-		placeBlock(Bedrock, glm::ivec3(x + 2, y + i, z - 2), chunk);
-
-		placeBlock(Bedrock, glm::ivec3(x - 2, y + i, z - 1), chunk);
-		placeBlock(Bedrock, glm::ivec3(x - 1, y + i, z - 1), chunk);
-		placeBlock(Bedrock, glm::ivec3(x    , y + i, z - 1), chunk);
-		placeBlock(Bedrock, glm::ivec3(x + 1, y + i, z - 1), chunk);
-		placeBlock(Bedrock, glm::ivec3(x + 2, y + i, z - 1), chunk);
-
-		placeBlock(Bedrock, glm::ivec3(x - 2, y + i, z    ), chunk);
-		placeBlock(Bedrock, glm::ivec3(x - 1, y + i, z    ), chunk);
-		placeBlock(Bedrock, glm::ivec3(x + 1, y + i, z    ), chunk);
-		placeBlock(Bedrock, glm::ivec3(x + 2, y + i, z    ), chunk);
-
-		placeBlock(Bedrock, glm::ivec3(x - 2, y + i, z + 1), chunk);
-		placeBlock(Bedrock, glm::ivec3(x - 1, y + i, z + 1), chunk);
-		placeBlock(Bedrock, glm::ivec3(x    , y + i, z + 1), chunk);
-		placeBlock(Bedrock, glm::ivec3(x + 1, y + i, z + 1), chunk);
-		placeBlock(Bedrock, glm::ivec3(x + 2, y + i, z + 1), chunk);
-
-		placeBlock(Bedrock, glm::ivec3(x - 2, y + i, z + 2), chunk);
-		placeBlock(Bedrock, glm::ivec3(x - 1, y + i, z + 2), chunk);
-		placeBlock(Bedrock, glm::ivec3(x    , y + i, z + 2), chunk);
-		placeBlock(Bedrock, glm::ivec3(x + 1, y + i, z + 2), chunk);
-		placeBlock(Bedrock, glm::ivec3(x + 2, y + i, z + 2), chunk);
-	}
-	for (int i = 6; i <= 7; i++)
-	{
-		placeBlock(Bedrock, glm::ivec3(x - 1, y + i, z), chunk);
-		placeBlock(Bedrock, glm::ivec3(x + 1, y + i, z    ), chunk);
-		placeBlock(Bedrock, glm::ivec3(x    , y + i, z - 1), chunk);
-		placeBlock(Bedrock, glm::ivec3(x    , y + i, z + 1), chunk);
-	}
-	placeBlock(Bedrock, glm::ivec3(x, y + 7, z), chunk);
-	generateChunkMesh(chunk);
-}
 
 void generateChunk(GameState *state, glm::ivec2 position)
 {
@@ -92,12 +37,11 @@ void generateChunk(GameState *state, glm::ivec2 position)
 			for (int x = 0; x < CHUNK_SIZE; x++)
 			{
 				int height = (int)scaled_octave_noise_2d(5.0f, 7.0f, 0.0007f, 16.0f, 48.0f, (float)(chunkBottomLeft.x * CHUNK_SIZE + x), (float)(chunkBottomLeft.z * CHUNK_SIZE + z));
+				//height = 1;
 				for (int i = 0; i < height; i++)
 				{
 					glm::ivec3 positionToPlace = glm::ivec3(x, i, z);
 
-
-					///*
 					if (i >= height - 1)
 						placeBlock(Grass, positionToPlace, chunk);
 					else if (i > height - 6)
@@ -126,6 +70,109 @@ void generateWorldAroundPosition(GameState *state, glm::ivec2 pos, int size)
 		}
 	}
 }
+
+bool blockExists(glm::vec3 position, GameState *state)
+{
+	Chunk *chunk = findChunkAtWorldPos(state, position);
+	return (chunk->blocks.count(vec3ToInt(worldToChunkPosition(position, chunk->position))) > 0);
+}
+
+bool blockExists(glm::vec3 position, Chunk* chunk)
+{
+	return (chunk->blocks.count(vec3ToInt(worldToChunkPosition(position, chunk->position))) > 0);
+}
+
+void movePlayer(Player *player, GameState *state)
+{
+	glm::vec3 oldPosition = player->position;
+	float velocity = player->moveSpeed * state->deltaTime;
+	glm::vec3 front = glm::normalize(player->front * glm::vec3(1.0f, 0.0f, 1.0f));
+	glm::vec3 right = glm::normalize(player->right * glm::vec3(1.0f, 0.0f, 1.0f));
+
+
+	Chunk *chunk = findChunkAtWorldPos(state, player->position);
+
+	player->onGround = false;
+	player->position += player->worldUp * GRAVITY * state->deltaTime;
+	if (chunk->blocks.count(vec3ToInt(worldToChunkPosition(player->position, chunk->position))) > 0)
+	{
+		player->position.y = oldPosition.y;
+		player->onGround = true;
+	}
+
+	if (state->KeyboardState[SDL_SCANCODE_W])
+	{
+		player->position.x += front.x * velocity;
+		if (blockExists(player->position, chunk))
+			player->position.x = oldPosition.x;
+
+		player->position.z += front.z * velocity;
+		if (blockExists(player->position, chunk))
+			player->position.z = oldPosition.z;
+	}
+
+	if (state->KeyboardState[SDL_SCANCODE_S])
+	{
+		player->position.x -= front.x * velocity;
+		if (blockExists(player->position, chunk))
+			player->position.x = oldPosition.x;
+
+		player->position.z -= front.z * velocity;
+		if (blockExists(player->position, chunk))
+			player->position.z = oldPosition.z;
+	}
+
+	if (state->KeyboardState[SDL_SCANCODE_A])
+	{
+		player->position.x -= right.x * velocity;
+		if (blockExists(player->position, chunk))
+			player->position.x = oldPosition.x;
+
+		player->position.z -= right.z * velocity;
+		if (blockExists(player->position, chunk))
+			player->position.z = oldPosition.z;
+	}
+
+	if (state->KeyboardState[SDL_SCANCODE_D])
+	{
+		player->position.x += right.x * velocity;
+		if (blockExists(player->position, chunk))
+			player->position.x = oldPosition.x;
+
+		player->position.z += right.z * velocity;
+		if (blockExists(player->position, chunk))
+			player->position.z = oldPosition.z;
+	}
+
+	if (state->KeyboardState[SDL_SCANCODE_SPACE])
+	{
+		std::cout << player->canFly << std::endl;
+		if (player->canFly)
+		{
+			player->position.y += player->worldUp.y * velocity;
+			if (blockExists(player->position, chunk))
+				player->position.y = oldPosition.y;
+		}
+		else if(player->onGround)
+		{
+			player->position.y += JUMPVALUE;
+			if (blockExists(player->position, chunk))
+				player->position.y = oldPosition.y;
+		}
+
+	}
+
+
+
+	if (state->KeyboardState[SDL_SCANCODE_LSHIFT])
+	{
+		player->position.y -= player->worldUp.y * velocity;
+		if (blockExists(player->position, chunk))
+			player->position.y = oldPosition.y;
+	}
+
+}
+
 
 
 void initGame(GameState *state)
@@ -229,17 +276,14 @@ int main(int argc, char* argv[])
 					}
 					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_L)
 					{
-						state.shouldGenerate = true;
-						std::cout << state.shouldGenerate << std::endl;
 					}
 					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_P)
 					{
-						state.shouldGenerate = false;
-						std::cout << state.shouldGenerate << std::endl;
 					}
 					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_LCTRL)
 					{
 						state.goFast = !state.goFast;
+						state.player.canFly = !state.player.canFly;
 					}
 					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_T)
 					{
@@ -292,38 +336,27 @@ int main(int argc, char* argv[])
 			}
 		}
 
-#if 1
+		glm::vec3 oldPlayerPos = state.player.position;
+
 		int xOffset, yOffset;
 		SDL_GetRelativeMouseState(&xOffset, &yOffset);
 		playerLook(&state.player, (float)xOffset, (float)yOffset);
 		SDL_PumpEvents();
-		const Uint8 *keyboardState = SDL_GetKeyboardState(0);
-		if (keyboardState[SDL_SCANCODE_W])
-			movePlayer(&state.player, FORWARD, state.deltaTime);
-		if (keyboardState[SDL_SCANCODE_A])
-			movePlayer(&state.player, LEFT, state.deltaTime);
-		if (keyboardState[SDL_SCANCODE_S])
-			movePlayer(&state.player, BACKWARD, state.deltaTime);
-		if (keyboardState[SDL_SCANCODE_D])
-			movePlayer(&state.player, RIGHT, state.deltaTime);
-		if (keyboardState[SDL_SCANCODE_SPACE])
-			movePlayer(&state.player, UP, state.deltaTime);
-		if (keyboardState[SDL_SCANCODE_LSHIFT])
-			movePlayer(&state.player, DOWN, state.deltaTime);
+		state.KeyboardState = SDL_GetKeyboardState(0);
+		movePlayer(&state.player, &state);
+
+
+
+		movePlayer(&state.player, &state);
+
 
 		updatePlayer(&state.player);
 
-
 		getRayDirection(state.player.camera, glm::vec2(windowWidth / 2.0f, windowHeight / 2.0f), glm::vec2(windowWidth, windowHeight));
 		initRay(&state.playerRay, state.player.camera.position, state.player.camera.front);
-#endif // 0
 
-		if (state.firstRun)
-		{
-			state.shouldGenerate = false;
-			std::cout << "===========================================" << std::endl;
-		}
 
+		
 
 		SDL_SetWindowTitle(window, std::string("X: " + std::to_string(state.player.position.x) + " Y: " + std::to_string(state.player.position.y) + " Z: " + std::to_string(state.player.position.z) + " Chunks: " + std::to_string(debugState.nChunks) + " Blocks: " + std::to_string(debugState.nBlocks) + " FT: " + std::to_string(state.deltaTime) + " FPS: " + std::to_string(1 / state.deltaTime)).c_str());
 
@@ -339,7 +372,7 @@ int main(int argc, char* argv[])
 		if (state.goFast)
 			state.player.moveSpeed = 50.0f;
 		else
-			state.player.moveSpeed = 10.0f;
+			state.player.moveSpeed = 5.0f;
 
 
 		glDisable(GL_BLEND);
@@ -350,13 +383,9 @@ int main(int argc, char* argv[])
 		setUniformMat4("projection", projection, lightedShader);
 		setUniformMat4("view", view, lightedShader);
 
-
-		int blockCounter = 0;
-		int chunkCounter = 0;
 		for (std::unordered_map<long long int, Chunk>::iterator iter = state.chunks.begin(); iter != state.chunks.end(); ++iter)
 		{
 			drawChunk((Chunk*)&iter->second,&state, lightedShader);
-			blockCounter += (int)iter->second.blocks.size();
 		}
 
 		glUseProgram(texturedShader);
@@ -407,7 +436,6 @@ int main(int argc, char* argv[])
 
 
 		SDL_GL_SwapWindow(window);
-		state.firstRun = false;
 	}
 
 

@@ -1,6 +1,9 @@
 #pragma once
 
 #include "camera.h"
+#include "Physics.h"
+
+#define JUMPVALUE 2.0f
 
 enum Move_Direction 
 {
@@ -19,13 +22,16 @@ struct Player
 	float yaw = 0.0f;
 	float pitch = 0.0f;
 	float lookSensitivity = SENSITIVTY;
-	float pickDistance = 32.0f;
+	float pickDistance = 16.0f;
 	Camera camera;
 	glm::vec3 position;
-	glm::vec3 cameraOffset = glm::vec3(0.0f, 2.0f, 0.0f);
+	glm::vec3 hitBoxDimensions = glm::vec3(0.5f, 1.0f, 0.5f);
+	glm::vec3 cameraOffset = glm::vec3(0.0f, 1.61803398875f, 0.0f);
 	glm::vec3 worldUp = glm::vec3(0.0f, 1.0f, 0.0f);
 	glm::vec3 front;
 	glm::vec3 right;
+	bool canFly = true;
+	bool onGround = false;
 };
 
 
@@ -64,25 +70,6 @@ void updatePlayer(Player *player)
 	updatePlayerVectors(player);
 }
 
-void movePlayer(Player *player, Move_Direction direction, float deltaTime)
-{
-	float velocity = player->moveSpeed * deltaTime;
-	glm::vec3 front = glm::normalize(player->front * glm::vec3(1.0f, 0.0f, 1.0f));
-	glm::vec3 right = glm::normalize(player->right * glm::vec3(1.0f, 0.0f, 1.0f));
-
-	if (direction == FORWARD)
-		player->position += front * velocity;
-	if (direction == BACKWARD)
-		player->position -= front * velocity;
-	if (direction == LEFT)
-		player->position -= right * velocity;
-	if (direction == RIGHT)
-		player->position += right * velocity;
-	if (direction == UP)
-		player->position += player->worldUp * velocity;
-	if (direction == DOWN)
-		player->position -= player->worldUp * velocity;
-}
 
 
 

@@ -22,9 +22,7 @@ struct GameState
 	GAME_MODE mode;
 	Player player;
 	bool gameShouldRun = true;
-	bool shouldGenerate = true;
 	bool goFast = true;
-	bool firstRun = true;
 	float deltaTime = 0.0f;
 	float lastTime = 0.0f;
 	float currentTime = 0.0f;
@@ -33,8 +31,9 @@ struct GameState
 	Ray playerRay;
 	glm::vec3 focusedBlockPos;
 	glm::vec3 focusedFacePos;
-	BlockID blockTypeToPlace = Grass;
+	BlockID blockTypeToPlace = Stone;
 	RawModel cubeModel;
+	const Uint8 *KeyboardState;
 };
 
 

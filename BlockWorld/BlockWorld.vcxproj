@@ -127,6 +127,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Legacy Code.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="simplexnoise.cpp" />
     <ClCompile Include="simplextextures.cpp" />
@@ -146,6 +147,7 @@
     <ClInclude Include="GameState.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="noise.h" />
+    <ClInclude Include="Physics.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="Ray.h" />
     <ClInclude Include="shader.h" />
