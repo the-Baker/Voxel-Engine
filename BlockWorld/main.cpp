@@ -317,9 +317,11 @@ int main(int argc, char* argv[])
 					}
 					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_L)
 					{
+						state.atlas = loadTexture("MinecraftAdapted.png");
 					}
 					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_P)
 					{
+						state.atlas = loadTexture("terrain.png");
 					}
 					if (windowEvent.key.keysym.scancode == SDL_SCANCODE_LCTRL)
 					{
@@ -387,8 +389,6 @@ int main(int argc, char* argv[])
 		movePlayer(&state.player, &state);
 
 
-
-		movePlayer(&state.player, &state);
 
 
 		updatePlayer(&state.player);

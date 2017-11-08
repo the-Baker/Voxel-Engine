@@ -22,7 +22,7 @@ struct GameState
 	GAME_MODE mode;
 	Player player;
 	bool gameShouldRun = true;
-	bool goFast = true;
+	bool goFast = false;
 	float deltaTime = 0.0f;
 	float lastTime = 0.0f;
 	float currentTime = 0.0f;
