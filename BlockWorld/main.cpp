@@ -99,49 +99,90 @@ void movePlayer(Player *player, GameState *state)
 		player->position.y = oldPosition.y;
 		player->onGround = true;
 	}
+#define MOVEMENTSTEPS 16
+
+	float incrementRatio = 1.0f / MOVEMENTSTEPS;
 
 	if (state->KeyboardState[SDL_SCANCODE_W])
 	{
-		player->position.x += front.x * velocity;
-		if (blockExists(player->position, chunk))
-			player->position.x = oldPosition.x;
+		for (int i = 0; i < MOVEMENTSTEPS; i++)
+		{
+			player->position.x += front.x * velocity * incrementRatio;
+			if (blockExists(player->position, state))
+			{
+				player->position.x = oldPosition.x;
+			}
+			oldPosition = player->position;
 
-		player->position.z += front.z * velocity;
-		if (blockExists(player->position, chunk))
-			player->position.z = oldPosition.z;
+
+			player->position.z += front.z * velocity * incrementRatio;
+			if (blockExists(player->position, state))
+			{
+				player->position.z = oldPosition.z;
+			}
+			oldPosition = player->position;
+
+		}
 	}
 
 	if (state->KeyboardState[SDL_SCANCODE_S])
 	{
-		player->position.x -= front.x * velocity;
-		if (blockExists(player->position, chunk))
-			player->position.x = oldPosition.x;
+		for (int i = 0; i < MOVEMENTSTEPS; i++)
+		{
+			player->position.x -= front.x * velocity * incrementRatio;
+			if (blockExists(player->position, state))
+			{
+				player->position.x = oldPosition.x;
+			}
+			oldPosition = player->position;
 
-		player->position.z -= front.z * velocity;
-		if (blockExists(player->position, chunk))
-			player->position.z = oldPosition.z;
+			player->position.z -= front.z * velocity * incrementRatio;
+			if (blockExists(player->position, state))
+			{
+				player->position.z = oldPosition.z;
+			}
+			oldPosition = player->position;
+		}
 	}
 
 	if (state->KeyboardState[SDL_SCANCODE_A])
 	{
-		player->position.x -= right.x * velocity;
-		if (blockExists(player->position, chunk))
-			player->position.x = oldPosition.x;
+		for (int i = 0; i < MOVEMENTSTEPS; i++)
+		{
+			player->position.x -= right.x * velocity * incrementRatio;
+			if (blockExists(player->position, state))
+			{
+				player->position.x = oldPosition.x;
+			}
+			oldPosition = player->position;
 
-		player->position.z -= right.z * velocity;
-		if (blockExists(player->position, chunk))
-			player->position.z = oldPosition.z;
+			player->position.z -= right.z * velocity * incrementRatio;
+			if (blockExists(player->position, state))
+			{
+				player->position.z = oldPosition.z;
+			}
+			oldPosition = player->position;
+		}
 	}
 
 	if (state->KeyboardState[SDL_SCANCODE_D])
 	{
-		player->position.x += right.x * velocity;
-		if (blockExists(player->position, chunk))
-			player->position.x = oldPosition.x;
+		for (int i = 0; i < MOVEMENTSTEPS; i++)
+		{
+			player->position.x += right.x * velocity * incrementRatio;
+			if (blockExists(player->position, state))
+			{
+				player->position.x = oldPosition.x;
+			}
+			oldPosition = player->position;
 
-		player->position.z += right.z * velocity;
-		if (blockExists(player->position, chunk))
-			player->position.z = oldPosition.z;
+			player->position.z += right.z * velocity * incrementRatio;
+			if (blockExists(player->position, state))
+			{
+				player->position.z = oldPosition.z;
+			}
+			oldPosition = player->position;
+		}
 	}
 
 	if (state->KeyboardState[SDL_SCANCODE_SPACE])
