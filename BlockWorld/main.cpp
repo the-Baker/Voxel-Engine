@@ -82,6 +82,22 @@ bool blockExists(glm::vec3 position, Chunk* chunk)
 	return (chunk->blocks.count(vec3ToInt(worldToChunkPosition(position, chunk->position))) > 0);
 }
 
+bool isHitboxInBlock(glm::vec3 position, glm::vec3 hitBoxDimensions, GameState *state)
+{
+	glm::vec3 playerBottomLeftBack =   { position.x - hitBoxDimensions.x * 0.5f, position.y,  position.z - hitBoxDimensions.z * 0.5f };
+	glm::vec3 playerBottomRightBack =  { position.x + hitBoxDimensions.x * 0.5f, position.y,  position.z - hitBoxDimensions.z * 0.5f };
+	glm::vec3 playerBottomLeftFront =  { position.x - hitBoxDimensions.x * 0.5f, position.y,  position.z + hitBoxDimensions.z * 0.5f };
+	glm::vec3 playerBottomRightFront = { position.x + hitBoxDimensions.x * 0.5f, position.y,  position.z + hitBoxDimensions.z * 0.5f };
+	glm::vec3 playerTopLeftBack =      { position.x - hitBoxDimensions.x * 0.5f, position.y + hitBoxDimensions.y, position.z - hitBoxDimensions.z * 0.5f };
+	glm::vec3 playerTopRightBack =     { position.x + hitBoxDimensions.x * 0.5f, position.y + hitBoxDimensions.y, position.z - hitBoxDimensions.z * 0.5f };
+	glm::vec3 playerTopLeftFront =     { position.x - hitBoxDimensions.x * 0.5f, position.y + hitBoxDimensions.y, position.z + hitBoxDimensions.z * 0.5f };
+	glm::vec3 playerTopRightFront =    { position.x + hitBoxDimensions.x * 0.5f, position.y + hitBoxDimensions.y, position.z + hitBoxDimensions.z * 0.5f };
+
+	return (blockExists(playerBottomLeftBack, state) || blockExists(playerBottomRightBack, state) || blockExists(playerBottomLeftFront, state)
+		|| blockExists(playerBottomRightFront, state) || blockExists(playerTopLeftBack, state) || blockExists(playerTopRightBack, state)
+		|| blockExists(playerTopLeftFront, state) || blockExists(playerTopRightFront, state));
+}
+
 void movePlayer(Player *player, GameState *state)
 {
 	glm::vec3 oldPosition = player->position;
@@ -93,12 +109,14 @@ void movePlayer(Player *player, GameState *state)
 	Chunk *chunk = findChunkAtWorldPos(state, player->position);
 
 	player->onGround = false;
-	player->position += player->worldUp * GRAVITY * state->deltaTime;
-	if (chunk->blocks.count(vec3ToInt(worldToChunkPosition(player->position, chunk->position))) > 0)
+	if(!player->canFly)
+		player->position += player->worldUp * GRAVITY * state->deltaTime;
+	if (isHitboxInBlock(player->position, player->hitBoxDimensions, state))
 	{
 		player->position.y = oldPosition.y;
 		player->onGround = true;
 	}
+
 #define MOVEMENTSTEPS 16
 
 	float incrementRatio = 1.0f / MOVEMENTSTEPS;
@@ -108,7 +126,7 @@ void movePlayer(Player *player, GameState *state)
 		for (int i = 0; i < MOVEMENTSTEPS; i++)
 		{
 			player->position.x += front.x * velocity * incrementRatio;
-			if (blockExists(player->position, state))
+			if (isHitboxInBlock(player->position, player->hitBoxDimensions, state))
 			{
 				player->position.x = oldPosition.x;
 			}
@@ -116,7 +134,7 @@ void movePlayer(Player *player, GameState *state)
 
 
 			player->position.z += front.z * velocity * incrementRatio;
-			if (blockExists(player->position, state))
+			if (isHitboxInBlock(player->position, player->hitBoxDimensions, state))
 			{
 				player->position.z = oldPosition.z;
 			}
@@ -130,14 +148,14 @@ void movePlayer(Player *player, GameState *state)
 		for (int i = 0; i < MOVEMENTSTEPS; i++)
 		{
 			player->position.x -= front.x * velocity * incrementRatio;
-			if (blockExists(player->position, state))
+			if (isHitboxInBlock(player->position, player->hitBoxDimensions, state))
 			{
 				player->position.x = oldPosition.x;
 			}
 			oldPosition = player->position;
 
 			player->position.z -= front.z * velocity * incrementRatio;
-			if (blockExists(player->position, state))
+			if (isHitboxInBlock(player->position, player->hitBoxDimensions, state))
 			{
 				player->position.z = oldPosition.z;
 			}
@@ -150,14 +168,14 @@ void movePlayer(Player *player, GameState *state)
 		for (int i = 0; i < MOVEMENTSTEPS; i++)
 		{
 			player->position.x -= right.x * velocity * incrementRatio;
-			if (blockExists(player->position, state))
+			if (isHitboxInBlock(player->position, player->hitBoxDimensions, state))
 			{
 				player->position.x = oldPosition.x;
 			}
 			oldPosition = player->position;
 
 			player->position.z -= right.z * velocity * incrementRatio;
-			if (blockExists(player->position, state))
+			if (isHitboxInBlock(player->position, player->hitBoxDimensions, state))
 			{
 				player->position.z = oldPosition.z;
 			}
@@ -170,14 +188,14 @@ void movePlayer(Player *player, GameState *state)
 		for (int i = 0; i < MOVEMENTSTEPS; i++)
 		{
 			player->position.x += right.x * velocity * incrementRatio;
-			if (blockExists(player->position, state))
+			if (isHitboxInBlock(player->position, player->hitBoxDimensions, state))
 			{
 				player->position.x = oldPosition.x;
 			}
 			oldPosition = player->position;
 
 			player->position.z += right.z * velocity * incrementRatio;
-			if (blockExists(player->position, state))
+			if (isHitboxInBlock(player->position, player->hitBoxDimensions, state))
 			{
 				player->position.z = oldPosition.z;
 			}
@@ -196,9 +214,15 @@ void movePlayer(Player *player, GameState *state)
 		}
 		else if(player->onGround)
 		{
-			player->position.y += JUMPVALUE;
-			if (blockExists(player->position, chunk))
-				player->position.y = oldPosition.y;
+			for (int i = 0; i < MOVEMENTSTEPS; i++)
+			{
+				player->position.y += JUMPVALUE * incrementRatio;
+				if (isHitboxInBlock(player->position, player->hitBoxDimensions, state))
+				{
+					player->position.y = oldPosition.y;
+				}
+				oldPosition = player->position;
+			}
 		}
 
 	}
@@ -411,7 +435,7 @@ int main(int argc, char* argv[])
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 		if (state.goFast)
-			state.player.moveSpeed = 50.0f;
+			state.player.moveSpeed = 25.0f;
 		else
 			state.player.moveSpeed = 5.0f;
 

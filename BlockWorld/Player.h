@@ -25,7 +25,7 @@ struct Player
 	float pickDistance = 16.0f;
 	Camera camera;
 	glm::vec3 position;
-	glm::vec3 hitBoxDimensions = glm::vec3(0.5f, 1.0f, 0.5f);
+	glm::vec3 hitBoxDimensions = glm::vec3(0.5f, 1.61803398875f, 0.5f);
 	glm::vec3 cameraOffset = glm::vec3(0.0f, 1.61803398875f, 0.0f);
 	glm::vec3 worldUp = glm::vec3(0.0f, 1.0f, 0.0f);
 	glm::vec3 front;
