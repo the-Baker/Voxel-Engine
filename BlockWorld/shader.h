@@ -71,10 +71,11 @@ void setUniformFloat(char* uniformName, float f, GLuint program)
 	int location = glGetUniformLocation(program, uniformName);
 	glUniform1f(location, f);
 }
+
 void setUniformUInt(char* uniformName, unsigned int i, GLuint program)
 {
 	int location = glGetUniformLocation(program, uniformName);
-	glUniform1f(location, i);
+	glUniform1ui(location, i);
 }
 
 char* file_read(const char* filename) {

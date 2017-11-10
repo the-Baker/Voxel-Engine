@@ -3,7 +3,7 @@
 #include "camera.h"
 #include "Physics.h"
 
-#define JUMPVALUE 2.0f
+#define JUMPVALUE 2000.0f
 
 enum Move_Direction 
 {

@@ -100,142 +100,101 @@ bool isHitboxInBlock(glm::vec3 position, glm::vec3 hitBoxDimensions, GameState *
 
 void movePlayer(Player *player, GameState *state)
 {
-	glm::vec3 oldPosition = player->position;
-	float velocity = player->moveSpeed * state->deltaTime;
+	player->acceleration = glm::vec3(0.0f);
+	float accelCoefficient = player->moveSpeed;
 	glm::vec3 front = glm::normalize(player->front * glm::vec3(1.0f, 0.0f, 1.0f));
 	glm::vec3 right = glm::normalize(player->right * glm::vec3(1.0f, 0.0f, 1.0f));
 
 
 	Chunk *chunk = findChunkAtWorldPos(state, player->position);
 
-	player->onGround = false;
 	if(!player->canFly)
-		player->position += player->worldUp * GRAVITY * state->deltaTime;
-	if (isHitboxInBlock(player->position, player->hitBoxDimensions, state))
+		player->acceleration = player->worldUp * GRAVITY;
+
+	bool gaveControl = false;
+
+
+	if (state->KeyboardState[SDL_SCANCODE_W])
 	{
-		player->position.y = oldPosition.y;
-		player->onGround = true;
+		player->acceleration += front * accelCoefficient;
+		gaveControl = true;
 	}
+
+	if (state->KeyboardState[SDL_SCANCODE_S])
+	{
+		player->acceleration -= front * accelCoefficient;
+		gaveControl = true;
+	}
+
+	if (state->KeyboardState[SDL_SCANCODE_A])
+	{
+		player->acceleration -= right * accelCoefficient;
+		gaveControl = true;
+	}
+
+	if (state->KeyboardState[SDL_SCANCODE_D])
+	{
+		player->acceleration += right * accelCoefficient;
+		gaveControl = true;
+	}
+
+	if (state->KeyboardState[SDL_SCANCODE_SPACE] && player->onGround)
+	{
+		player->acceleration.y += JUMPVALUE;
+		gaveControl = true;
+	}
+
+	if (state->KeyboardState[SDL_SCANCODE_LSHIFT] && player->canFly)
+	{
+		player->acceleration -= player->worldUp * accelCoefficient;
+	}
+
+
+
+	//player->velocity *= AIR_RESISTANCE;
+	if (player->onGround)
+	{
+		std::cout << gaveControl << state->currentTime << std::endl;
+		if(!gaveControl)
+			player->velocity += glm::vec3(player->velocity.x, 0.0f, player->velocity.z) * -FRICTION;
+	}
+
+	player->velocity += player->acceleration * state->deltaTime;
+	if (glm::length(player->velocity) > 20.0f)
+	{
+		player->velocity = glm::normalize(player->velocity) * 20.0f;
+	}
+
 
 #define MOVEMENTSTEPS 16
 
 	float incrementRatio = 1.0f / MOVEMENTSTEPS;
 
-	if (state->KeyboardState[SDL_SCANCODE_W])
+	player->onGround = false;
+	for (int i = 0; i < MOVEMENTSTEPS; i++)
 	{
-		for (int i = 0; i < MOVEMENTSTEPS; i++)
+		glm::vec3 oldPosition = player->position;
+		player->position.x += player->velocity.x * state->deltaTime * incrementRatio;
+		if (isHitboxInBlock(player->position, player->hitBoxDimensions, state))
 		{
-			player->position.x += front.x * velocity * incrementRatio;
-			if (isHitboxInBlock(player->position, player->hitBoxDimensions, state))
-			{
-				player->position.x = oldPosition.x;
-			}
-			oldPosition = player->position;
-
-
-			player->position.z += front.z * velocity * incrementRatio;
-			if (isHitboxInBlock(player->position, player->hitBoxDimensions, state))
-			{
-				player->position.z = oldPosition.z;
-			}
-			oldPosition = player->position;
-
+			player->position.x = oldPosition.x;
+			player->velocity.x = 0.0f;
 		}
-	}
+		player->position.y += player->velocity.y * state->deltaTime * incrementRatio;
 
-	if (state->KeyboardState[SDL_SCANCODE_S])
-	{
-		for (int i = 0; i < MOVEMENTSTEPS; i++)
+		if (isHitboxInBlock(player->position, player->hitBoxDimensions, state))
 		{
-			player->position.x -= front.x * velocity * incrementRatio;
-			if (isHitboxInBlock(player->position, player->hitBoxDimensions, state))
-			{
-				player->position.x = oldPosition.x;
-			}
-			oldPosition = player->position;
-
-			player->position.z -= front.z * velocity * incrementRatio;
-			if (isHitboxInBlock(player->position, player->hitBoxDimensions, state))
-			{
-				player->position.z = oldPosition.z;
-			}
-			oldPosition = player->position;
-		}
-	}
-
-	if (state->KeyboardState[SDL_SCANCODE_A])
-	{
-		for (int i = 0; i < MOVEMENTSTEPS; i++)
-		{
-			player->position.x -= right.x * velocity * incrementRatio;
-			if (isHitboxInBlock(player->position, player->hitBoxDimensions, state))
-			{
-				player->position.x = oldPosition.x;
-			}
-			oldPosition = player->position;
-
-			player->position.z -= right.z * velocity * incrementRatio;
-			if (isHitboxInBlock(player->position, player->hitBoxDimensions, state))
-			{
-				player->position.z = oldPosition.z;
-			}
-			oldPosition = player->position;
-		}
-	}
-
-	if (state->KeyboardState[SDL_SCANCODE_D])
-	{
-		for (int i = 0; i < MOVEMENTSTEPS; i++)
-		{
-			player->position.x += right.x * velocity * incrementRatio;
-			if (isHitboxInBlock(player->position, player->hitBoxDimensions, state))
-			{
-				player->position.x = oldPosition.x;
-			}
-			oldPosition = player->position;
-
-			player->position.z += right.z * velocity * incrementRatio;
-			if (isHitboxInBlock(player->position, player->hitBoxDimensions, state))
-			{
-				player->position.z = oldPosition.z;
-			}
-			oldPosition = player->position;
-		}
-	}
-
-	if (state->KeyboardState[SDL_SCANCODE_SPACE])
-	{
-		std::cout << player->canFly << std::endl;
-		if (player->canFly)
-		{
-			player->position.y += player->worldUp.y * velocity;
-			if (blockExists(player->position, chunk))
-				player->position.y = oldPosition.y;
-		}
-		else if(player->onGround)
-		{
-			for (int i = 0; i < MOVEMENTSTEPS; i++)
-			{
-				player->position.y += JUMPVALUE * incrementRatio;
-				if (isHitboxInBlock(player->position, player->hitBoxDimensions, state))
-				{
-					player->position.y = oldPosition.y;
-				}
-				oldPosition = player->position;
-			}
-		}
-
-	}
-
-
-
-	if (state->KeyboardState[SDL_SCANCODE_LSHIFT])
-	{
-		player->position.y -= player->worldUp.y * velocity;
-		if (blockExists(player->position, chunk))
 			player->position.y = oldPosition.y;
+			player->velocity.y = 0.0f;
+			player->onGround = true;
+		}
+		player->position.z += player->velocity.z * state->deltaTime * incrementRatio;
+		if (isHitboxInBlock(player->position, player->hitBoxDimensions, state))
+		{
+			player->position.z = oldPosition.z;
+			player->velocity.z = 0.0f;
+		}
 	}
-
 }
 
 
@@ -423,7 +382,7 @@ int main(int argc, char* argv[])
 
 		
 
-		SDL_SetWindowTitle(window, std::string("X: " + std::to_string(state.player.position.x) + " Y: " + std::to_string(state.player.position.y) + " Z: " + std::to_string(state.player.position.z) + " Chunks: " + std::to_string(debugState.nChunks) + " Blocks: " + std::to_string(debugState.nBlocks) + " FT: " + std::to_string(state.deltaTime) + " FPS: " + std::to_string(1 / state.deltaTime)).c_str());
+		SDL_SetWindowTitle(window, std::string("X: " + std::to_string(state.player.position.x) + " Y: " + std::to_string(state.player.position.y) + " Z: " + std::to_string(state.player.position.z) + " Chunks: " + std::to_string(debugState.nChunks) + " Blocks: " + std::to_string(debugState.nBlocks) + " FT: " + std::to_string(state.deltaTime) + " FPS: " + std::to_string(1 / state.deltaTime) + " FLYMODE: " + std::to_string(state.goFast) + "VX: " + std::to_string(state.player.velocity.x) + " VY: " + std::to_string(state.player.velocity.y) + " VZ: " + std::to_string(state.player.velocity.z)).c_str());
 
 		glViewport(0, 0, windowWidth, windowHeight);
 		glClearColor(9.0f / 255.0f, 64.0f / 255.0f, 255.0f / 255.0f, 1.0f);
