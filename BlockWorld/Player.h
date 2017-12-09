@@ -3,7 +3,7 @@
 #include "camera.h"
 #include "Physics.h"
 
-#define JUMPVALUE 10.0f
+#define JUMPVALUE 6.0f
 
 enum Move_Direction 
 {
@@ -18,8 +18,8 @@ enum Move_Direction
 
 struct Player
 {
-	float moveSpeed = 64.0f;
-	float maxSpeed = 16.0f;
+	float moveSpeed = 32.0f;
+	float maxSpeed = 5.612f;
 	float yaw = 0.0f;
 	float pitch = 0.0f;
 	float lookSensitivity = SENSITIVTY;
@@ -41,7 +41,7 @@ struct Player
 
 void initPlayer(Player *player)
 {
-	player->position = glm::vec3(8.0f, 43.0f, 8.0f);
+	player->position = glm::vec3(333.0f, 43.0f, 333.0f);
 	glm::vec3 front;
 	front.x = cos(glm::radians(player->yaw)) * cos(glm::radians(player->pitch));
 	front.y = sin(glm::radians(player->pitch));

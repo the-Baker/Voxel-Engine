@@ -112,10 +112,11 @@ bool isHitboxInBlock(glm::vec3 position, glm::vec3 hitBoxDimensions, GameState *
 void movePlayer(Player *player, GameState *state)
 {
 	player->acceleration = glm::vec3(0.0f, GRAVITY, 0.0f);
+	float velocityMagnitude = glm::length(player->velocity);
 	float oppositePercent = 0.0f;
 	float reactivityPercentage = 0.5f;
 
-	float moveSpeed = player->moveSpeed * state->deltaTime;
+	float moveSpeed = player->moveSpeed;
 	//float accelCoefficient = player->moveSpeed * state->deltaTime;
 	glm::vec3 front = glm::normalize(player->front * glm::vec3(1.0f, 0.0f, 1.0f));
 	glm::vec3 right = glm::normalize(player->right * glm::vec3(1.0f, 0.0f, 1.0f));
@@ -123,53 +124,81 @@ void movePlayer(Player *player, GameState *state)
 
 	Chunk *chunk = findChunkAtWorldPos(state, player->position);
 
-	if(!player->canFly)
-		//player->acceleration += player->worldUp * GRAVITY;
-
-
 	if (state->KeyboardState[SDL_SCANCODE_W])
 	{
-		player->position += front * moveSpeed;
+		player->acceleration += front * moveSpeed;
 	}
 
 	if (state->KeyboardState[SDL_SCANCODE_S])
 	{
-		player->position -= front * moveSpeed;
+		player->acceleration -= front * moveSpeed;
 	}
 
 	if (state->KeyboardState[SDL_SCANCODE_A])
 	{
-		player->position -= right * moveSpeed;
+		player->acceleration -= right * moveSpeed;
 	}
 
 	if (state->KeyboardState[SDL_SCANCODE_D])
 	{
-		player->position += right * moveSpeed;
+		player->acceleration += right * moveSpeed;
 	}
 
-	if (state->KeyboardState[SDL_SCANCODE_SPACE])
+	if (state->KeyboardState[SDL_SCANCODE_SPACE] && player->onGround)
 	{
-		player->position += player->worldUp * moveSpeed;
+		player->velocity += player->worldUp * JUMPVALUE;
 	}
 
 	if (state->KeyboardState[SDL_SCANCODE_LSHIFT])
 	{
-		player->position -= player->worldUp * moveSpeed;
+		player->acceleration -= player->worldUp * moveSpeed;
 	}
 	
 
+	glm::vec2 horizontalVelocity = glm::vec2(player->velocity.x, player->velocity.z);
+	float horizontalVelocityMagnitude = glm::length(horizontalVelocity);
+	if (horizontalVelocityMagnitude > player->maxSpeed)
+	{
+		player->velocity.x = glm::normalize(horizontalVelocity).x * player->maxSpeed;
+		player->velocity.z = glm::normalize(horizontalVelocity).y * player->maxSpeed;
+	}
 
+	
+	//Do Ground Friction
+	if (player->onGround)
+	{
+		if (velocityMagnitude > 0.0f)
+		{
+			player->acceleration.x += player->velocity.x / velocityMagnitude * -FRICTION;
+			player->acceleration.z += player->velocity.z / velocityMagnitude * -FRICTION;
+		}
+		if (horizontalVelocityMagnitude < 0.2f)
+		{
+			player->velocity.x = 0.0f;
+			player->velocity.z = 0.0f;
+		}
+	}
+	else
+	{
+		if (velocityMagnitude > 0.0f)
+		{
+			player->acceleration.x += player->velocity.x / velocityMagnitude * -AIR_RESISTANCE;
+			player->acceleration.z += player->velocity.z / velocityMagnitude * -AIR_RESISTANCE;
+		}
+		if (horizontalVelocityMagnitude < 0.2f)
+		{
+			player->velocity.x = 0.0f;
+			player->velocity.z = 0.0f;
+		}
+	}
 
-	//player->velocity += player->acceleration * state->deltaTime;
-
-#if 0
+	player->velocity += player->acceleration * state->deltaTime;
 
 
 #define MOVEMENTSTEPS 16
 
 	float incrementRatio = 1.0f / (float)MOVEMENTSTEPS;
 
-	player->velocity = glm::vec3(0.0f);
 	player->onGround = false;
 	for (int i = 0; i < MOVEMENTSTEPS; i++)
 	{
@@ -195,7 +224,6 @@ void movePlayer(Player *player, GameState *state)
 			player->velocity.z = 0.0f;
 		}
 	}
-#endif // 0
 }
 
 
@@ -214,14 +242,7 @@ void initGame(GameState *state)
 	cubeModel = loadToVAO(cubeVertices, ARRAY_COUNT(cubeVertices), &cubeUVs[0], (unsigned int)cubeUVs.size());
 	state->cubeModel = cubeModel;
 
-	for (int z = 0; z < WORLD_SIZE; z++)
-	{
-		for (int x = 0; x < WORLD_SIZE; x++)
-		{
-			glm::ivec2 positionToInit(x, z);
-			generateChunk(state, positionToInit);
-		}
-	}
+	generateWorldAroundPosition(state, posOfChunkAtWorldPos(state->player.position), 4);
 }
 
 int main(int argc, char* argv[])
@@ -377,8 +398,8 @@ int main(int argc, char* argv[])
 
 
 		updatePlayer(&state.player);
-		destroyDistantWorld(&state, playerChunkPos, 2);
-		generateWorldAroundPosition(&state, playerChunkPos, 2);
+		destroyDistantWorld(&state, playerChunkPos, 4);
+		generateWorldAroundPosition(&state, playerChunkPos, 4);
 
 		getRayDirection(state.player.camera, glm::vec2(windowWidth / 2.0f, windowHeight / 2.0f), glm::vec2(windowWidth, windowHeight));
 		initRay(&state.playerRay, state.player.camera.position, state.player.camera.front);
@@ -401,10 +422,7 @@ int main(int argc, char* argv[])
 		else
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-		if (state.goFast)
-			state.player.moveSpeed = 128.0f;
-		else
-			state.player.moveSpeed = 25.0f;
+
 
 
 		glDisable(GL_BLEND);
