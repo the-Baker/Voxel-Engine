@@ -3,7 +3,7 @@
 #include "camera.h"
 #include "Physics.h"
 
-#define JUMPVALUE 2000.0f
+#define JUMPVALUE 10.0f
 
 enum Move_Direction 
 {
@@ -18,7 +18,8 @@ enum Move_Direction
 
 struct Player
 {
-	float moveSpeed = 10.0f;
+	float moveSpeed = 64.0f;
+	float maxSpeed = 16.0f;
 	float yaw = 0.0f;
 	float pitch = 0.0f;
 	float lookSensitivity = SENSITIVTY;

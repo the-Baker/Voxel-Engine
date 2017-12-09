@@ -39,13 +39,21 @@ glm::vec3 findFirstBlock(float stepSize, float distance, Ray *ray, GameState *st
 		long long int chunkKey = vec2ToInt64(chunkPos);
 		int blockKey = vec3ToInt(blockPos);
 
-		Chunk *chunk = &state->chunks.at(chunkKey);
-		if (chunk->blocks.count(blockKey) == 1)
+		if (checkChunkExists(chunkPos, state))
 		{
-			return ray->end;
+			Chunk *chunk = &state->chunks.at(chunkKey);
+			if (chunk->blocks.count(blockKey) == 1)
+			{
+				return ray->end;
+			}
 		}
+		else
+		{
+			return glm::ivec3(0);
+		}
+
 	}
-	return glm::ivec3(0, 0, 0);
+	return glm::ivec3(0);
 }
 
 glm::vec3 findLastSpace(float stepSize, float distance, Ray *ray, GameState *state)

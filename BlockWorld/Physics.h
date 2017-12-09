@@ -2,7 +2,7 @@
 #include <glm\glm.hpp>
 
 #define GRAVITY -9.81f
-#define FRICTION 0.1f
+#define FRICTION 5.0f
 #define AIR_RESISTANCE 0.999f
 
 bool AABB3DTest(glm::vec3 box1Position, glm::vec3 box1Dimensions, glm::vec3 box2Position, glm::vec3 box2Dimensions)

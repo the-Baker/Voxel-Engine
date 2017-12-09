@@ -3,8 +3,8 @@
 #include <iostream>
 #include <unordered_map>
 #include <stdio.h>
-#include <thread>
 #include <string>
+#include <math.h>
 
 #include <glm\glm.hpp>
 #include <glm\gtc\matrix_transform.hpp>
@@ -58,16 +58,27 @@ void generateChunk(GameState *state, glm::ivec2 position)
 	generateChunkMesh(chunk);
 }
 
-void generateWorldAroundPosition(GameState *state, glm::ivec2 pos, int size)
+void generateWorldAroundPosition(GameState *state, glm::ivec2 pos, int halfSize)
 {
-	for (int z = -size; z < size; z++)
+	for (int z = -halfSize; z < halfSize; z++)
 	{
-		for (int x = -size; x < size; x++)
+		for (int x = -halfSize; x < halfSize; x++)
 		{
 			glm::ivec2 posToGen = { pos.x + x, pos.y + z };
 			if (!checkChunkExists(posToGen, state))
 				generateChunk(state, posToGen);
 		}
+	}
+}
+
+void destroyDistantWorld(GameState *state, glm::ivec2 pos, int halfSize)
+{
+	glm::ivec2 chunkPos;
+	for (auto iterator = state->chunks.begin(); iterator != state->chunks.end(); iterator++)
+	{
+		chunkPos = iterator->second.position;
+		if (chunkPos.x < pos.x - halfSize || chunkPos.x > pos.x + halfSize || chunkPos.y < pos.y - halfSize || chunkPos.y > pos.y + halfSize)
+			state->chunks.erase(iterator->first);
 	}
 }
 
@@ -100,8 +111,12 @@ bool isHitboxInBlock(glm::vec3 position, glm::vec3 hitBoxDimensions, GameState *
 
 void movePlayer(Player *player, GameState *state)
 {
-	player->acceleration = glm::vec3(0.0f);
-	float accelCoefficient = player->moveSpeed;
+	player->acceleration = glm::vec3(0.0f, GRAVITY, 0.0f);
+	float oppositePercent = 0.0f;
+	float reactivityPercentage = 0.5f;
+
+	float moveSpeed = player->moveSpeed * state->deltaTime;
+	//float accelCoefficient = player->moveSpeed * state->deltaTime;
 	glm::vec3 front = glm::normalize(player->front * glm::vec3(1.0f, 0.0f, 1.0f));
 	glm::vec3 right = glm::normalize(player->right * glm::vec3(1.0f, 0.0f, 1.0f));
 
@@ -109,67 +124,52 @@ void movePlayer(Player *player, GameState *state)
 	Chunk *chunk = findChunkAtWorldPos(state, player->position);
 
 	if(!player->canFly)
-		player->acceleration = player->worldUp * GRAVITY;
-
-	bool gaveControl = false;
+		//player->acceleration += player->worldUp * GRAVITY;
 
 
 	if (state->KeyboardState[SDL_SCANCODE_W])
 	{
-		player->acceleration += front * accelCoefficient;
-		gaveControl = true;
+		player->position += front * moveSpeed;
 	}
 
 	if (state->KeyboardState[SDL_SCANCODE_S])
 	{
-		player->acceleration -= front * accelCoefficient;
-		gaveControl = true;
+		player->position -= front * moveSpeed;
 	}
 
 	if (state->KeyboardState[SDL_SCANCODE_A])
 	{
-		player->acceleration -= right * accelCoefficient;
-		gaveControl = true;
+		player->position -= right * moveSpeed;
 	}
 
 	if (state->KeyboardState[SDL_SCANCODE_D])
 	{
-		player->acceleration += right * accelCoefficient;
-		gaveControl = true;
+		player->position += right * moveSpeed;
 	}
 
-	if (state->KeyboardState[SDL_SCANCODE_SPACE] && player->onGround)
+	if (state->KeyboardState[SDL_SCANCODE_SPACE])
 	{
-		player->acceleration.y += JUMPVALUE;
-		gaveControl = true;
+		player->position += player->worldUp * moveSpeed;
 	}
 
-	if (state->KeyboardState[SDL_SCANCODE_LSHIFT] && player->canFly)
+	if (state->KeyboardState[SDL_SCANCODE_LSHIFT])
 	{
-		player->acceleration -= player->worldUp * accelCoefficient;
+		player->position -= player->worldUp * moveSpeed;
 	}
+	
 
 
 
-	//player->velocity *= AIR_RESISTANCE;
-	if (player->onGround)
-	{
-		std::cout << gaveControl << state->currentTime << std::endl;
-		if(!gaveControl)
-			player->velocity += glm::vec3(player->velocity.x, 0.0f, player->velocity.z) * -FRICTION;
-	}
+	//player->velocity += player->acceleration * state->deltaTime;
 
-	player->velocity += player->acceleration * state->deltaTime;
-	if (glm::length(player->velocity) > 20.0f)
-	{
-		player->velocity = glm::normalize(player->velocity) * 20.0f;
-	}
+#if 0
 
 
 #define MOVEMENTSTEPS 16
 
-	float incrementRatio = 1.0f / MOVEMENTSTEPS;
+	float incrementRatio = 1.0f / (float)MOVEMENTSTEPS;
 
+	player->velocity = glm::vec3(0.0f);
 	player->onGround = false;
 	for (int i = 0; i < MOVEMENTSTEPS; i++)
 	{
@@ -195,6 +195,7 @@ void movePlayer(Player *player, GameState *state)
 			player->velocity.z = 0.0f;
 		}
 	}
+#endif // 0
 }
 
 
@@ -374,7 +375,10 @@ int main(int argc, char* argv[])
 
 
 
+
 		updatePlayer(&state.player);
+		destroyDistantWorld(&state, playerChunkPos, 2);
+		generateWorldAroundPosition(&state, playerChunkPos, 2);
 
 		getRayDirection(state.player.camera, glm::vec2(windowWidth / 2.0f, windowHeight / 2.0f), glm::vec2(windowWidth, windowHeight));
 		initRay(&state.playerRay, state.player.camera.position, state.player.camera.front);
@@ -382,7 +386,11 @@ int main(int argc, char* argv[])
 
 		
 
-		SDL_SetWindowTitle(window, std::string("X: " + std::to_string(state.player.position.x) + " Y: " + std::to_string(state.player.position.y) + " Z: " + std::to_string(state.player.position.z) + " Chunks: " + std::to_string(debugState.nChunks) + " Blocks: " + std::to_string(debugState.nBlocks) + " FT: " + std::to_string(state.deltaTime) + " FPS: " + std::to_string(1 / state.deltaTime) + " FLYMODE: " + std::to_string(state.goFast) + "VX: " + std::to_string(state.player.velocity.x) + " VY: " + std::to_string(state.player.velocity.y) + " VZ: " + std::to_string(state.player.velocity.z)).c_str());
+		SDL_SetWindowTitle(window, std::string("X: " + std::to_string(state.player.position.x) + 
+			" Y: " + std::to_string(state.player.position.y) + " Z: " + std::to_string(state.player.position.z) +
+			" FT: " + std::to_string(state.deltaTime) + " FPS: " + std::to_string(1 / state.deltaTime) + 
+			" FLYMODE: " + std::to_string(state.goFast) + "VX: " + std::to_string(state.player.velocity.x) 
+			+ " VY: " + std::to_string(state.player.velocity.y) + " VZ: " + std::to_string(state.player.velocity.z)).c_str());
 
 		glViewport(0, 0, windowWidth, windowHeight);
 		glClearColor(9.0f / 255.0f, 64.0f / 255.0f, 255.0f / 255.0f, 1.0f);
@@ -394,9 +402,9 @@ int main(int argc, char* argv[])
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 		if (state.goFast)
-			state.player.moveSpeed = 25.0f;
+			state.player.moveSpeed = 128.0f;
 		else
-			state.player.moveSpeed = 5.0f;
+			state.player.moveSpeed = 25.0f;
 
 
 		glDisable(GL_BLEND);
